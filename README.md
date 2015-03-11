@@ -59,7 +59,8 @@ The following items will be done in order
 3. Add "Encryption" (reformating based on key) of integers, data time object
 4. Recreate documentation
 5. Create example code
-6. Create an function to encrypt unencrypted database and vice versa
+6. Create an function to encrypt unencrypted database and vice versa (console command, migration, changed key, etc.)
 7. Look for a posibility of automatic encryption of query parameters
 8. Look for a positbility to override findOneBy for automatic encryption of parameters
-9. Add "Encryption" (reformating based on key) on all other database types) [Doctrine documentation Types](http://doctrine-dbal.readthedocs.org/en/latest/reference/types.html)
+9. Add support to encrypt data by reference to other property as key (Encrypt data specific to user with user key etc.)
+10. Add "Encryption" (reformating based on key) on all other database types) [Doctrine documentation Types](http://doctrine-dbal.readthedocs.org/en/latest/reference/types.html)
