@@ -1,8 +1,0 @@
-services:
-    ambta_doctrine_encrypt.orm_subscriber:
-        class: %ambta_doctrine_encrypt.orm_subscriber.class%
-        arguments: ["@annotation_reader", %ambta_doctrine_encrypt.encryptor_class_name%, %ambta_doctrine_encrypt.secret_key%]
-        tags:
-            -  { name: doctrine.event_subscriber }
-    ambta_doctrine_encrypt.subscriber:
-        alias: ambta_doctrine_encrypt.orm_subscriber
