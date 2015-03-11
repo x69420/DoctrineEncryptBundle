@@ -9,5 +9,5 @@ namespace Ambta\DoctrineEncryptBundle\Configuration;
  * @Annotation
  */
 class Encrypted {
-    // some parameters will be added
+    //Just an placeholder
 }

@@ -22,12 +22,17 @@ class DoctrineEncryptExtension extends Extension {
      */
     public function load(array $configs, ContainerBuilder $container) {
 
+        //Create configuration object
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
+        //Set orm-service in array of services
         $services = array('orm' => 'orm-services');
+
+        //set supported encryptor classes
         $supportedEncryptorClasses = array('aes256' => 'Ambta\DoctrineEncryptBundle\Encryptors\AES256Encryptor');
 
+        //If no secret key is set, check for framework secret, otherwise throw exception
         if (empty($config['secret_key'])) {
             if ($container->hasParameter('secret')) {
                 $config['secret_key'] = $container->getParameter('secret');
@@ -36,26 +41,21 @@ class DoctrineEncryptExtension extends Extension {
             }
         }
 
-        if (!empty($config['encryptor_class'])) {
-            $encryptorFullName = $config['encryptor_class'];
-        } else {
-            $encryptorFullName = $supportedEncryptorClasses[$config['encryptor']];
+        //If empty encryptor class, use AES256 encryptor
+        if (empty($config['encryptor_class'])) {
+            $config['encryptor_class'] = $supportedEncryptorClasses['aes256'];
         }
 
-        $container->setParameter('ambta_doctrine_encrypt.encryptor_class_name', $encryptorFullName);
+        //Set parameters
+        $container->setParameter('ambta_doctrine_encrypt.encryptor_class_name', $config['encryptor_class']);
         $container->setParameter('ambta_doctrine_encrypt.secret_key', $config['secret_key']);
 
-        if (!empty($config['encryptor_service'])) {
-            $container->setParameter('ambta_doctrine_encrypt.encryptor_service', $config['encryptor_service']);
-        }
-
+        //Load service file
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
-        $loader->load(sprintf('%s.yml', $services[$config['db_driver']]));
+        $loader->load(sprintf('%s.yml', $services['orm']));
     }
-
 
     public function getAlias() {
         return 'ambta_doctrine_encrypt';
     }
-
 }

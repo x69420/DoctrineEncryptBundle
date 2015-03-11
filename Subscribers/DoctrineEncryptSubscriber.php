@@ -47,11 +47,12 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
 
     /**
      * Initialization of subscriber
+     *
      * @param Reader $annReader
-     * @param string $encryptorClass  The encryptor class.  This can be empty if
-     * a service is being provided.
+     * @param string $encryptorClass  The encryptor class.  This can be empty if a service is being provided.
      * @param string $secretKey The secret key.
      * @param EncryptorInterface|NULL $service (Optional)  An EncryptorInterface.
+     *
      * This allows for the use of dependency injection for the encrypters.
      */
     public function __construct(Reader $annReader, $encryptorClass, $secretKey, EncryptorInterface $service = NULL) {
@@ -64,8 +65,12 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
     }
 
     /**
-     * Listen a postUpdate lifecycle event. Checking and encrypt entities
-     * which have @Encrypted annotation
+     * Listen a postUpdate lifecycle event.
+     * Decrypt entity's property's values when post updated.
+     *
+     * So for example after form submit the preUpdate encrypted the entity
+     * We have to decrypt them before showing them again.
+     *
      * @param LifecycleEventArgs $args
      */
     public function postUpdate(LifecycleEventArgs $args) {
@@ -76,9 +81,9 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
     }
 
     /**
-     * Listen a preUpdate lifecycle event. Checking and encrypt entities fields
-     * which have @Encrypted annotation. Using changesets to avoid preUpdate event
-     * restrictions
+     * Listen a preUpdate lifecycle event.
+     * Encrypt entity's property's values on preUpdate, so they will be stored encrypted
+     *
      * @param PreUpdateEventArgs $args
      */
     public function preUpdate(PreUpdateEventArgs $args) {
@@ -89,12 +94,14 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
     }
 
     /**
-     * Listen a postLoad lifecycle event. Checking and decrypt entities
-     * which have @Encrypted annotations
+     * Listen a postLoad lifecycle event.
+     * Decrypt entity's property's values when loaded into the entity manger
+     *
      * @param LifecycleEventArgs $args
      */
     public function postLoad(LifecycleEventArgs $args) {
 
+        //Get entity and process fields
         $entity = $args->getEntity();
         $this->processFields($entity, false);
 
@@ -102,6 +109,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
 
     /**
      * Realization of EventSubscriber interface method.
+     *
      * @return Array Return all events which this subscriber is listening
      */
     public function getSubscribedEvents() {
@@ -112,65 +120,70 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
         );
     }
 
-    /**
-     * Capitalize string
-     * @param string $word
-     * @return string
-     */
-    public static function capitalize($word) {
-        if (is_array($word)) {
-            $word = $word[0];
-        }
-
-        return str_replace(' ', '', ucwords(str_replace(array('-', '_'), ' ', $word)));
-    }
 
     /**
      * Process (encrypt/decrypt) entities fields
-     * @param Obj $entity Some doctrine entity
+     *
+     * @param Object $entity doctrine entity
      * @param Boolean $isEncryptOperation If true - encrypt, false - decrypt entity
      *
      * @throws \RuntimeException
-     *
-     * @return boolean
      */
     private function processFields($entity, $isEncryptOperation = true) {
 
+        //Check which operation to be used
         $encryptorMethod = $isEncryptOperation ? 'encrypt' : 'decrypt';
 
-
+        //Get the real class, we don't want to use the proxy classes
         $realClass = \Doctrine\Common\Util\ClassUtils::getClass($entity);
 
+        //Get ReflectionClass of our entity
         $reflectionClass = new ReflectionClass($realClass);
-
         $properties = $reflectionClass->getProperties();
 
-        $withAnnotation = false;
-
+        //Foreach property in the reflection class
         foreach ($properties as $refProperty) {
 
+            /**
+             * If followed standards, method name is getPropertyName, the propertyName is lowerCamelCase
+             * So just uppercase first character of the property, later on get and set{$methodName} wil be used
+             */
+            $methodName = ucfirst($refProperty->getName());
+
+            /**
+             * Lazy loading, check if the property has an manyToOne relationship.
+             * if it has look if the set/get exists and recursively call this function based on the entity inside. Only if not empty ofcourse
+             */
             if($this->annReader->getPropertyAnnotation($refProperty, 'Doctrine\ORM\Mapping\ManyToOne')) {
-                $getter = "get".ucfirst($refProperty->getName());
-                $this->processFields($entity->$getter(), $isEncryptOperation);
+                if ($reflectionClass->hasMethod($getter = 'get' . $methodName) && $reflectionClass->hasMethod($setter = 'set' . $methodName)) {
+                    $entity = $entity->$getter();
+                    if(!empty($entity)) {
+                        $this->processFields($entity, $isEncryptOperation);
+                    }
+                }
             }
 
+            /**
+             * If property is an normal value and contains the Encrypt tag, lets encrypt/decrypt that property
+             */
             if ($this->annReader->getPropertyAnnotation($refProperty, self::ENCRYPTED_ANN_NAME)) {
 
-                $withAnnotation = true;
-
-                // we have annotation and if it decrypt operation, we must avoid double decryption
-                $propName = $refProperty->getName();
-
+                /**
+                 * If it is public lets not use the getter/setter
+                 */
                 if ($refProperty->isPublic()) {
+                    $propName = $refProperty->getName();
                     $entity->$propName = $this->encryptor->$encryptorMethod($refProperty->getValue());
-
                 } else {
 
-                    $methodName = self::capitalize($propName);
-
+                    //If private or protected check if there is an getter/setter for the property, based on the $methodName
                     if ($reflectionClass->hasMethod($getter = 'get' . $methodName) && $reflectionClass->hasMethod($setter = 'set' . $methodName)) {
 
+                        //Get the information (value) of the property
                         $getInformation = $entity->$getter();
+
+                        //Then decrypt, encrypt the information if not empty en the <ENC> tag is there or not
+                        //The <ENC> will be added at the end of an encrypted string so it is marked as encrypted
                         if($encryptorMethod == "decrypt") {
                             if(!is_null($getInformation) and !empty($getInformation)) {
                                 if(substr($entity->$getter(), -5) == "<ENC>") {
@@ -194,8 +207,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
             }
         }
 
-
-        return $withAnnotation;
     }
 
     /**

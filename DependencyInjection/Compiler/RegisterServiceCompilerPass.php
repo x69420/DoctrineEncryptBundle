@@ -9,7 +9,7 @@ use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 
 /**
- * Description of RegisterServiceCompilerPass
+ * The RegisterServiceCompilerPass class
  *
  * @author wpigott
  */
@@ -18,8 +18,6 @@ class RegisterServiceCompilerPass implements CompilerPassInterface {
     public function process(ContainerBuilder $container) {
         //Nothing here
     }
-
-
 }
 
 ?>
