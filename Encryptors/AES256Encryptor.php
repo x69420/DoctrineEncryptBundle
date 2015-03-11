@@ -1,6 +1,6 @@
 <?php
 
-namespace VMelnik\DoctrineEncryptBundle\Encryptors;
+namespace Ambta\DoctrineEncryptBundle\Encryptors;
 
 /**
  * Class for AES256 encryption

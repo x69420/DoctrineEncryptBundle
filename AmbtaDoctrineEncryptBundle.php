@@ -1,15 +1,14 @@
 <?php
 
-namespace VMelnik\DoctrineEncryptBundle;
+namespace Ambta\DoctrineEncryptBundle;
 
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
-use VMelnik\DoctrineEncryptBundle\DependencyInjection\VMelnikDoctrineEncryptExtension;
-use VMelnik\DoctrineEncryptBundle\DependencyInjection\Compiler\RegisterServiceCompilerPass;
+use Ambta\DoctrineEncryptBundle\DependencyInjection\DoctrineEncryptExtension;
+use Ambta\DoctrineEncryptBundle\DependencyInjection\Compiler\RegisterServiceCompilerPass;
 
-
-class VMelnikDoctrineEncryptBundle extends Bundle {
+class AmbtaDoctrineEncryptBundle extends Bundle {
     
     public function build(ContainerBuilder $container) {
         parent::build($container);
@@ -18,6 +17,6 @@ class VMelnikDoctrineEncryptBundle extends Bundle {
     
     public function getContainerExtension()
     {
-        return new VMelnikDoctrineEncryptExtension();
+        return new DoctrineEncryptExtension();
     }
 }

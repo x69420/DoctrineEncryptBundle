@@ -1,6 +1,6 @@
 <?php
 
-namespace VMelnik\DoctrineEncryptBundle\DependencyInjection;
+namespace Ambta\DoctrineEncryptBundle\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
@@ -19,7 +19,7 @@ class Configuration implements ConfigurationInterface {
      */
     public function getConfigTreeBuilder() {
         $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('vmelnik_doctrine_encrypt');
+        $rootNode = $treeBuilder->root('ambta_doctrine_encrypt');
         $supportedDrivers = array('orm');
         $supportedEncryptors = array('aes256');
 

@@ -1,16 +1,16 @@
 #Installation
 
-1. Download VMelnikDoctrineEncryptBundle using composer
+1. Download AmbtaDoctrineEncryptBundle using composer
 2. Enable the Bundle
 
-### Step 1: Download VMelnikDoctrineEncryptBundle using composer
+### Step 1: Download AmbtaDoctrineEncryptBundle using composer
 
-Add VMelnikDoctrineEncryptBundle in your composer.json:
+Add AmbtaDoctrineEncryptBundle in your composer.json:
 
 ```js
 {
     "require": {
-        "vmelnik/doctrine-encrypt-bundle": "dev-master"
+        "ambta/doctrine-encrypt-bundle": "dev-master"
     }
 }
 ```
@@ -18,10 +18,10 @@ Add VMelnikDoctrineEncryptBundle in your composer.json:
 Now tell composer to download the bundle by running the command:
 
 ``` bash
-$ php composer.phar update vmelnik/doctrine-encrypt-bundle
+$ php composer.phar update ambta/doctrine-encrypt-bundle
 ```
 
-Composer will install the bundle to your project's `vendor/vmelnik` directory.
+Composer will install the bundle to your project's `vendor/ambta` directory.
 
 ### Step 2: Enable the bundle
 
@@ -35,7 +35,7 @@ public function registerBundles()
 {
     $bundles = array(
         // ...
-        new VMelnik\DoctrineEncryptBundle\VMelnikDoctrineEncryptBundle(),
+        new Ambta\DoctrineEncryptBundle\AmbtaDoctrineEncryptBundle(),
     );
 }
 ```

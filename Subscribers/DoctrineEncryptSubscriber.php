@@ -1,6 +1,6 @@
 <?php
 
-namespace VMelnik\DoctrineEncryptBundle\Subscribers;
+namespace Ambta\DoctrineEncryptBundle\Subscribers;
 
 use Doctrine\ORM\Events;
 use Doctrine\Common\EventSubscriber;
@@ -9,46 +9,48 @@ use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\Common\Annotations\Reader;
 use \Doctrine\ORM\EntityManager;
 use \ReflectionClass;
-use VMelnik\DoctrineEncryptBundle\Encryptors\EncryptorInterface;
+use Ambta\DoctrineEncryptBundle\Encryptors\EncryptorInterface;
+use Symfony\Component\Security\Core\Util\ClassUtils;
 
 /**
  * Doctrine event subscriber which encrypt/decrypt entities
  */
 class DoctrineEncryptSubscriber implements EventSubscriber {
     /**
-     * Encryptor interface namespace 
+     * Encryptor interface namespace
      */
 
-    const ENCRYPTOR_INTERFACE_NS = 'VMelnik\DoctrineEncryptBundle\Encryptors\EncryptorInterface';
+    const ENCRYPTOR_INTERFACE_NS = 'Ambta\DoctrineEncryptBundle\Encryptors\EncryptorInterface';
 
     /**
      * Encrypted annotation full name
      */
-    const ENCRYPTED_ANN_NAME = 'VMelnik\DoctrineEncryptBundle\Configuration\Encrypted';
+    const ENCRYPTED_ANN_NAME = 'Ambta\DoctrineEncryptBundle\Configuration\Encrypted';
 
     /**
      * Encryptor
-     * @var EncryptorInterface 
+     * @var EncryptorInterface
      */
     private $encryptor;
 
     /**
      * Annotation reader
-     * @var Doctrine\Common\Annotations\Reader
+     * @var \Doctrine\Common\Annotations\Reader
      */
     private $annReader;
 
     /**
-     * Registr to avoid multi decode operations for one entity
+     * Register to avoid multi decode operations for one entity
      * @var array
      */
     private $decodedRegistry = array();
 
     /**
      * Initialization of subscriber
-     * @param string $encryptorClass  The encryptor class.  This can be empty if 
+     * @param Reader $annReader
+     * @param string $encryptorClass  The encryptor class.  This can be empty if
      * a service is being provided.
-     * @param string $secretKey The secret key. 
+     * @param string $secretKey The secret key.
      * @param EncryptorInterface|NULL $service (Optional)  An EncryptorInterface.
      * This allows for the use of dependency injection for the encrypters.
      */
@@ -62,44 +64,40 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
     }
 
     /**
-     * Listen a prePersist lifecycle event. Checking and encrypt entities
+     * Listen a postUpdate lifecycle event. Checking and encrypt entities
      * which have @Encrypted annotation
-     * @param LifecycleEventArgs $args 
+     * @param LifecycleEventArgs $args
      */
-    public function prePersist(LifecycleEventArgs $args) {
+    public function postUpdate(LifecycleEventArgs $args) {
+
         $entity = $args->getEntity();
-        $this->processFields($entity);
+        $this->processFields($entity, false);
+
     }
 
     /**
      * Listen a preUpdate lifecycle event. Checking and encrypt entities fields
      * which have @Encrypted annotation. Using changesets to avoid preUpdate event
      * restrictions
-     * @param PreUpdateEventArgs $args 
+     * @param PreUpdateEventArgs $args
      */
     public function preUpdate(PreUpdateEventArgs $args) {
-        $reflectionClass = new ReflectionClass($args->getEntity());
-        $properties = $reflectionClass->getProperties();
-        foreach ($properties as $refProperty) {
-            if ($this->annReader->getPropertyAnnotation($refProperty, self::ENCRYPTED_ANN_NAME)) {
-                $propName = $refProperty->getName();
-                $args->setNewValue($propName, $this->encryptor->encrypt($args->getNewValue($propName)));
-            }
-        }
+
+        $entity = $args->getEntity();
+        $this->processFields($entity);
+
     }
 
     /**
      * Listen a postLoad lifecycle event. Checking and decrypt entities
      * which have @Encrypted annotations
-     * @param LifecycleEventArgs $args 
+     * @param LifecycleEventArgs $args
      */
     public function postLoad(LifecycleEventArgs $args) {
+
         $entity = $args->getEntity();
-        if (!$this->hasInDecodedRegistry($entity, $args->getEntityManager())) {
-            if ($this->processFields($entity, false)) {
-                $this->addToDecodedRegistry($entity, $args->getEntityManager());
-            }
-        }
+        $this->processFields($entity, false);
+
     }
 
     /**
@@ -108,7 +106,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
      */
     public function getSubscribedEvents() {
         return array(
-            Events::prePersist,
+            Events::postUpdate,
             Events::preUpdate,
             Events::postLoad,
         );
@@ -130,31 +128,72 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
     /**
      * Process (encrypt/decrypt) entities fields
      * @param Obj $entity Some doctrine entity
-     * @param Boolean $isEncryptOperation If true - encrypt, false - decrypt entity 
+     * @param Boolean $isEncryptOperation If true - encrypt, false - decrypt entity
+     *
+     * @throws \RuntimeException
+     *
+     * @return boolean
      */
     private function processFields($entity, $isEncryptOperation = true) {
+
         $encryptorMethod = $isEncryptOperation ? 'encrypt' : 'decrypt';
-        $reflectionClass = new ReflectionClass($entity);
+
+
+        $realClass = \Doctrine\Common\Util\ClassUtils::getClass($entity);
+
+        $reflectionClass = new ReflectionClass($realClass);
+
         $properties = $reflectionClass->getProperties();
+
         $withAnnotation = false;
+
         foreach ($properties as $refProperty) {
+
+            if($this->annReader->getPropertyAnnotation($refProperty, 'Doctrine\ORM\Mapping\ManyToOne')) {
+                $getter = "get".ucfirst($refProperty->getName());
+                $this->processFields($entity->$getter(), $isEncryptOperation);
+            }
+
             if ($this->annReader->getPropertyAnnotation($refProperty, self::ENCRYPTED_ANN_NAME)) {
+
                 $withAnnotation = true;
-                // we have annotation and if it decrypt operation, we must avoid duble decryption
+
+                // we have annotation and if it decrypt operation, we must avoid double decryption
                 $propName = $refProperty->getName();
+
                 if ($refProperty->isPublic()) {
                     $entity->$propName = $this->encryptor->$encryptorMethod($refProperty->getValue());
+
                 } else {
+
                     $methodName = self::capitalize($propName);
+
                     if ($reflectionClass->hasMethod($getter = 'get' . $methodName) && $reflectionClass->hasMethod($setter = 'set' . $methodName)) {
-                        $currentPropValue = $this->encryptor->$encryptorMethod($entity->$getter());
-                        $entity->$setter($currentPropValue);
+
+                        $getInformation = $entity->$getter();
+                        if($encryptorMethod == "decrypt") {
+                            if(!is_null($getInformation) and !empty($getInformation)) {
+                                if(substr($entity->$getter(), -5) == "<ENC>") {
+                                    $currentPropValue = $this->encryptor->$encryptorMethod(substr($entity->$getter(), 0, -5));
+                                    $entity->$setter($currentPropValue);
+                                }
+                            }
+                        } else {
+                            if(!is_null($getInformation) and !empty($getInformation)) {
+                                if(substr($entity->$getter(), -5) != "<ENC>") {
+                                    $currentPropValue = $this->encryptor->$encryptorMethod($entity->$getter()) . "<ENC>";
+                                    $entity->$setter($currentPropValue);
+                                }
+                            }
+                        }
+
                     } else {
                         throw new \RuntimeException(sprintf("Property %s isn't public and doesn't has getter/setter"));
                     }
                 }
             }
         }
+
 
         return $withAnnotation;
     }
@@ -164,7 +203,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
      * @param string $classFullName Encryptor namespace and name
      * @param string $secretKey Secret key for encryptor
      * @return EncryptorInterface
-     * @throws \RuntimeException 
+     * @throws \RuntimeException
      */
     private function encryptorFactory($classFullName, $secretKey) {
         $refClass = new \ReflectionClass($classFullName);
@@ -174,31 +213,4 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
             throw new \RuntimeException('Encryptor must implements interface EncryptorInterface');
         }
     }
-
-    /**
-     * Check if we have entity in decoded registry
-     * @param Object $entity Some doctrine entity
-     * @param \Doctrine\ORM\EntityManager $em
-     * @return boolean
-     */
-    private function hasInDecodedRegistry($entity, EntityManager $em) {
-        $className = get_class($entity);
-        $metadata = $em->getClassMetadata($className);
-        $getter = 'get' . self::capitalize($metadata->getIdentifier());
-
-        return isset($this->decodedRegistry[$className][$entity->$getter()]);
-    }
-
-    /**
-     * Adds entity to decoded registry
-     * @param object $entity Some doctrine entity
-     * @param \Doctrine\ORM\EntityManager $em
-     */
-    private function addToDecodedRegistry($entity, EntityManager $em) {
-        $className = get_class($entity);
-        $metadata = $em->getClassMetadata($className);
-        $getter = 'get' . self::capitalize($metadata->getIdentifier());
-        $this->decodedRegistry[$className][$entity->$getter()] = true;
-    }
-
 }
