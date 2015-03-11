@@ -4,6 +4,6 @@ This bundle is responsible for encryption/decryption of the data in DB. All encr
 
 The following documents are available:
 
-* [Configuration reference](https://github.com/marcel-ambta/DoctrineEncryptBundle/blob/master/Resources/doc/configuration_reference.md)
-* [Installation](https://github.com/marcel-ambta/DoctrineEncryptBundle/blob/master/Resources/doc/installation.md)
-* [Example of usage](https://github.com/marcel-ambta/DoctrineEncryptBundle/blob/master/Resources/doc/example_of_usage.md)
+* [Configuration reference](https://github.com/mbta/DoctrineEncryptBundle/blob/master/Resources/doc/configuration_reference.md)
+* [Installation](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/installation.md)
+* [Example of usage](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/example_of_usage.md)

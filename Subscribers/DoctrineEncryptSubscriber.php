@@ -182,8 +182,10 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
                         //Get the information (value) of the property
                         $getInformation = $entity->$getter();
 
-                        //Then decrypt, encrypt the information if not empty en the <ENC> tag is there or not
-                        //The <ENC> will be added at the end of an encrypted string so it is marked as encrypted
+                        /**
+                         * Then decrypt, encrypt the information if not empty en the <ENC> tag is there or not
+                         * The <ENC> will be added at the end of an encrypted string so it is marked as encrypted
+                         */
                         if($encryptorMethod == "decrypt") {
                             if(!is_null($getInformation) and !empty($getInformation)) {
                                 if(substr($entity->$getter(), -5) == "<ENC>") {
