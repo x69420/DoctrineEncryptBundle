@@ -10,7 +10,7 @@ Add AmbtaDoctrineEncryptBundle in your composer.json:
 ```js
 {
     "require": {
-        "ambta/doctrine-encrypt-bundle": "dev-master"
+        "ambta/doctrine-encrypt-bundle": "2.1.*"
     }
 }
 ```
