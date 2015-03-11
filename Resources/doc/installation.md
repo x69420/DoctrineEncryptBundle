@@ -25,7 +25,7 @@ Composer will install the bundle to your project's `vendor/ambta` directory.
 
 ### Step 2: Enable the bundle
 
-Enable the bundle in the kernel:
+Enable the bundle in the kernel by adding it:
 
 ``` php
 <?php

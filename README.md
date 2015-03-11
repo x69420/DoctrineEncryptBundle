@@ -6,8 +6,35 @@ help of some encryption algorithm in database and it will be clearly for develop
 This is an fork from the original bundle created by vmelnik-ukrain (Many thanks to him) which can be found here:
 [vmelnik-ukraine/DoctrineEncryptBundle](https://github.com/vmelnik-ukraine/DoctrineEncryptBundle)
 
-I improved several things, i make better use of the doctrine events.
-and it works with lazy loading (relationships)!
+I improved several things, i make better use of the doctrine events. and it works with lazy loading (relationships)!
+This will be an long term project we will be working on with long-term support and backward compatibility. We are using this bundle in all our own symfony2 project.
+More about us can be found on our website. [Ambta.com](https://ambta.com)
+
+###What does it do exactly
+
+It gives you the opportunity to add the @Encrypt annotation above each (string/text) field
+
+```
+/**
+ * @Encrypt
+ */
+protected $username;
+```
+
+The bundle uses doctrine his life cycle events to encrypt the data when inserted into the database and decrypt the data when loaded into your entity manager.
+It is only able to encrypt string values at the moment, numbers and other fields will be added later on in development.
+
+###Advantages and disadvantaged of an encrypted database
+
+####Advantages
+- Information is stored safely
+- Not worrying about saving backups at other locations
+- Unreadable for employees managing the database
+
+####Disadvantages
+- Can't use ORDER BY on encrypted data
+- In SELECT WHERE statements the where values also have to be encrypted
+- When you lose your key you lose your data (Make a backup of the key on a safe location)
 
 ###Documentation
 
