@@ -15,6 +15,11 @@ use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
  */
 class RegisterServiceCompilerPass implements CompilerPassInterface {
 
+    /**
+     * can modify the container here before dumped to PHP code
+     *
+     * @param ContainerBuilder $container
+     */
     public function process(ContainerBuilder $container) {
         //Nothing here
     }

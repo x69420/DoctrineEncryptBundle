@@ -55,6 +55,11 @@ class DoctrineEncryptExtension extends Extension {
         $loader->load(sprintf('%s.yml', $services['orm']));
     }
 
+    /**
+     * Get alias for configuration
+     *
+     * @return string
+     */
     public function getAlias() {
         return 'ambta_doctrine_encrypt';
     }
