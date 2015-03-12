@@ -55,26 +55,25 @@ I'm using Semantic Versioning like described [here](http://semver.org)
 The following items will be done in order
 
 ~~1. Review of complete code + fixes/improvements and inline documentation (2.1.1)~~
-2. Add support for the other doctrine relationships (manyToMany, ManyToOne) (2.3)
-3. Add "Encryption" (reformating based on key) of integers, data time object (2.4)
-4. Recreate documentation (2.5)
-5. Create example code (2.5)
-6. Create an function to encrypt unencrypted database and vice versa (console command, migration, changed key, etc.) (2.6)
-7. Look for a posibility of automatic encryption of query parameters (2.7)
-8. Look for a positbility to override findOneBy for automatic encryption of parameters (2.8)
-9. Add support to encrypt data by reference to other property as key (Encrypt data specific to user with user key etc.) (2.9)
-10. Add "Encryption" (reformating based on key) on all other database types) [Doctrine documentation Types](http://doctrine-dbal.readthedocs.org/en/latest/reference/types.html) (3)
+2. Add support for the other doctrine relationships (manyToMany, ManyToOne) (2.2)
+3. Add "Encryption" (reformating based on key) of integers, data time object (2.3)
+4. Recreate documentation (2.4)
+5. Create example code (2.4)
+6. Create an function to encrypt unencrypted database and vice versa (console command, migration, changed key, etc.) (2.5)
+7. Look for a posibility of automatic encryption of query parameters (2.6)
+8. Look for a positbility to override findOneBy for automatic encryption of parameters (2.7)
+9. Add support to encrypt data by reference to other property as key (Encrypt data specific to user with user key etc.) (2.8)
+10. Add "Encryption" (reformating based on key) on all other database types) [Doctrine documentation Types](http://doctrine-dbal.readthedocs.org/en/latest/reference/types.html) (3.0)
 
 ####Roadmap
 
 #####Goals:
 
-- v2.2 - 12-03-2015
-- v2.3 - 17-03-2015
-- v2.4 - 20-03-2015
-- v2.5 - 21-03-2015
-- v2.6 - 31-03-2015
+- v2.2 - 17-03-2015
+- v2.3 - 20-03-2015
+- v2.4 - 21-03-2015
+- v2.5 - 31-03-2015
+- v2.6 - unknown
 - v2.7 - unknown
 - v2.8 - unknown
-- v2.9 - unknown
 - v3.0 - 20-05-2015
