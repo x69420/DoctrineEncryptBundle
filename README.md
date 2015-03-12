@@ -54,7 +54,7 @@ I'm using Semantic Versioning like described [here](http://semver.org)
 
 The following items will be done in order
 
-1. Review of complete code + fixes/improvements and inline documentation (2.2)
+~~1. Review of complete code + fixes/improvements and inline documentation (2.1.1)~~
 2. Add support for the other doctrine relationships (manyToMany, ManyToOne) (2.3)
 3. Add "Encryption" (reformating based on key) of integers, data time object (2.4)
 4. Recreate documentation (2.5)
@@ -69,12 +69,12 @@ The following items will be done in order
 
 #####Goals:
 
-v2.2 - 12-03-2015
-v2.3 - 17-03-2015
-v2.4 - 20-03-2015
-v2.5 - 21-03-2015
-v2.6 - 31-03-2015
-v2.7 - unknown
-v2.8 - unknown
-v2.9 - unknown
-v3.0 - 20-05-2015
+- v2.2 - 12-03-2015
+- v2.3 - 17-03-2015
+- v2.4 - 20-03-2015
+- v2.5 - 21-03-2015
+- v2.6 - 31-03-2015
+- v2.7 - unknown
+- v2.8 - unknown
+- v2.9 - unknown
+- v3.0 - 20-05-2015

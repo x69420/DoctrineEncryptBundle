@@ -29,7 +29,7 @@ class Configuration implements ConfigurationInterface {
                     ->scalarNode('secret_key')
                         ->beforeNormalization()
                         ->ifNull()
-                            ->thenInvalid('You must specifiy secret_key option')
+                            ->thenInvalid('You must specify secret_key option')
                         ->end()
                     ->end()
                     ->scalarNode('encryptor_class')

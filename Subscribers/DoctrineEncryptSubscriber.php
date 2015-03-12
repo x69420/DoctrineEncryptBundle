@@ -7,19 +7,18 @@ use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\Common\Annotations\Reader;
-use \Doctrine\ORM\EntityManager;
+use Doctrine\Common\Util\ClassUtils;
 use \ReflectionClass;
 use Ambta\DoctrineEncryptBundle\Encryptors\EncryptorInterface;
-use Symfony\Component\Security\Core\Util\ClassUtils;
 
 /**
  * Doctrine event subscriber which encrypt/decrypt entities
  */
 class DoctrineEncryptSubscriber implements EventSubscriber {
+
     /**
      * Encryptor interface namespace
      */
-
     const ENCRYPTOR_INTERFACE_NS = 'Ambta\DoctrineEncryptBundle\Encryptors\EncryptorInterface';
 
     /**
@@ -38,12 +37,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
      * @var \Doctrine\Common\Annotations\Reader
      */
     private $annReader;
-
-    /**
-     * Register to avoid multi decode operations for one entity
-     * @var array
-     */
-    private $decodedRegistry = array();
 
     /**
      * Initialization of subscriber
@@ -135,7 +128,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
         $encryptorMethod = $isEncryptOperation ? 'encrypt' : 'decrypt';
 
         //Get the real class, we don't want to use the proxy classes
-        $realClass = \Doctrine\Common\Util\ClassUtils::getClass($entity);
+        $realClass = ClassUtils::getClass($entity);
 
         //Get ReflectionClass of our entity
         $reflectionClass = new ReflectionClass($realClass);
@@ -152,7 +145,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
 
             /**
              * Lazy loading, check if the property has an manyToOne relationship.
-             * if it has look if the set/get exists and recursively call this function based on the entity inside. Only if not empty ofcourse
+             * if it has look if the set/get exists and recursively call this function based on the entity inside. Only if not empty.
              */
             if($this->annReader->getPropertyAnnotation($refProperty, 'Doctrine\ORM\Mapping\ManyToOne')) {
                 if ($reflectionClass->hasMethod($getter = 'get' . $methodName) && $reflectionClass->hasMethod($setter = 'set' . $methodName)) {
