@@ -128,11 +128,16 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
         $encryptorMethod = $isEncryptOperation ? 'encrypt' : 'decrypt';
 
         //Get the real class, we don't want to use the proxy classes
-        $realClass = ClassUtils::getClass($entity);
+        if(strstr(get_class($entity), "Proxies")) {
+            $realClass = ClassUtils::getClass($entity);
+        } else {
+            $realClass = get_class($entity);
+        }
 
         //Get ReflectionClass of our entity
         $reflectionClass = new ReflectionClass($realClass);
         $properties = $reflectionClass->getProperties();
+
 
         //Foreach property in the reflection class
         foreach ($properties as $refProperty) {
@@ -142,19 +147,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
              * So just uppercase first character of the property, later on get and set{$methodName} wil be used
              */
             $methodName = ucfirst($refProperty->getName());
-
-            /**
-             * Lazy loading, check if the property has an manyToOne relationship.
-             * if it has look if the set/get exists and recursively call this function based on the entity inside. Only if not empty.
-             */
-            if($this->annReader->getPropertyAnnotation($refProperty, 'Doctrine\ORM\Mapping\ManyToOne')) {
-                if ($reflectionClass->hasMethod($getter = 'get' . $methodName) && $reflectionClass->hasMethod($setter = 'set' . $methodName)) {
-                    $entity = $entity->$getter();
-                    if(!empty($entity)) {
-                        $this->processFields($entity, $isEncryptOperation);
-                    }
-                }
-            }
 
             /**
              * If property is an normal value and contains the Encrypt tag, lets encrypt/decrypt that property
@@ -168,35 +160,36 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
                     $propName = $refProperty->getName();
                     $entity->$propName = $this->encryptor->$encryptorMethod($refProperty->getValue());
                 } else {
-
                     //If private or protected check if there is an getter/setter for the property, based on the $methodName
                     if ($reflectionClass->hasMethod($getter = 'get' . $methodName) && $reflectionClass->hasMethod($setter = 'set' . $methodName)) {
 
                         //Get the information (value) of the property
-                        $getInformation = $entity->$getter();
+                        try {
+                            $getInformation = $entity->$getter();
+                        } catch(\Exception $e) {
+                            $getInformation = null;
+                            var_dump($e);
+                        }
 
                         /**
                          * Then decrypt, encrypt the information if not empty, information is an string and the <ENC> tag is there (decrypt) or not (encrypt).
                          * The <ENC> will be added at the end of an encrypted string so it is marked as encrypted. Also protects against double encryption/decryption
                          */
                         if($encryptorMethod == "decrypt") {
-                            if(!is_null($getInformation) and !empty($getInformation) and is_string($getInformation)) {
-                                if(substr($entity->$getter(), -5) == "<ENC>") {
-                                    $currentPropValue = $this->encryptor->$encryptorMethod(substr($entity->$getter(), 0, -5));
+                            if(!is_null($getInformation) and !empty($getInformation)) {
+                                if(substr($getInformation, -5) == "<ENC>") {
+                                    $currentPropValue = $this->encryptor->decrypt(substr($getInformation, 0, -5));
                                     $entity->$setter($currentPropValue);
                                 }
                             }
                         } else {
-                            if(!is_null($getInformation) and !empty($getInformation) and is_string($getInformation)) {
+                            if(!is_null($getInformation) and !empty($getInformation)) {
                                 if(substr($entity->$getter(), -5) != "<ENC>") {
-                                    $currentPropValue = $this->encryptor->$encryptorMethod($entity->$getter()) . "<ENC>";
+                                    $currentPropValue = $this->encryptor->encrypt($entity->$getter());
                                     $entity->$setter($currentPropValue);
                                 }
                             }
                         }
-
-                    } else {
-                        throw new \RuntimeException(sprintf("Property %s isn't public and doesn't has getter/setter"));
                     }
                 }
             }

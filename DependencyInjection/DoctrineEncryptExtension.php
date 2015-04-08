@@ -29,7 +29,7 @@ class DoctrineEncryptExtension extends Extension {
         $services = array('orm' => 'orm-services');
 
         //set supported encryptor classes
-        $supportedEncryptorClasses = array('aes256' => 'Ambta\DoctrineEncryptBundle\Encryptors\AES256Encryptor');
+        $supportedEncryptorClasses = array('variable' => 'Ambta\DoctrineEncryptBundle\Encryptors\VariableEncryptor');
 
         //If no secret key is set, check for framework secret, otherwise throw exception
         if (empty($config['secret_key'])) {
@@ -42,7 +42,7 @@ class DoctrineEncryptExtension extends Extension {
 
         //If empty encryptor class, use AES256 encryptor
         if (empty($config['encryptor_class'])) {
-            $config['encryptor_class'] = $supportedEncryptorClasses['aes256'];
+            $config['encryptor_class'] = $supportedEncryptorClasses['variable'];
         }
 
         //Set parameters
