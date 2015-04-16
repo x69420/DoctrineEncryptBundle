@@ -16,6 +16,9 @@ use Symfony\Component\DependencyInjection\Loader;
  */
 class DoctrineEncryptExtension extends Extension {
 
+    public static $supportedEncryptorClasses = array('rijndael256' => 'Ambta\DoctrineEncryptBundle\Encryptors\Rijndael256Encryptor',
+                                                    'rijndael128'=> 'Ambta\DoctrineEncryptBundle\Encryptors\Rijndael128Encryptor');
+
     /**
      * {@inheritDoc}
      */
@@ -29,7 +32,7 @@ class DoctrineEncryptExtension extends Extension {
         $services = array('orm' => 'orm-services');
 
         //set supported encryptor classes
-        $supportedEncryptorClasses = array('variable' => 'Ambta\DoctrineEncryptBundle\Encryptors\VariableEncryptor');
+        $supportedEncryptorClasses = self::$supportedEncryptorClasses;
 
         //If no secret key is set, check for framework secret, otherwise throw exception
         if (empty($config['secret_key'])) {
@@ -40,9 +43,13 @@ class DoctrineEncryptExtension extends Extension {
             }
         }
 
-        //If empty encryptor class, use AES256 encryptor
-        if (empty($config['encryptor_class'])) {
-            $config['encryptor_class'] = $supportedEncryptorClasses['variable'];
+        //If empty encryptor class, use Rijndael 256 encryptor
+        if(empty($config['encryptor_class'])) {
+            if(isset($config['encryptor']) and isset($supportedEncryptorClasses[$config['encryptor']])) {
+                $config['encryptor_class'] = $supportedEncryptorClasses[$config['encryptor']];
+            } else {
+                $config['encryptor_class'] = $supportedEncryptorClasses['rijndael256'];
+            }
         }
 
         //Set parameters

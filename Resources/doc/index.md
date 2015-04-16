@@ -1,9 +1,12 @@
 #DoctrineEncryptBundle 
 
-This bundle is responsible for encryption/decryption of the data in DB. All encryption/decryption work on PHP side
+This bundle is responsible for encryption/decryption of the data in your database.
+All encryption/decryption work on the server side.
 
 The following documents are available:
 
-* [Configuration reference](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/configuration_reference.md)
 * [Installation](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/installation.md)
-* [Example of usage](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/example_of_usage.md)
+* [Configuration](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/configuration.md)
+* [Usage](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/usage.md)
+* [Console commands](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/commands.md)
+* [Cusom encryptor class](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/custom_encryptor.md)

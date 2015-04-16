@@ -10,7 +10,8 @@ namespace Ambta\DoctrineEncryptBundle\Encryptors;
 interface EncryptorInterface {
 
     /**
-     * Must accept secret key for encryption 
+     * Must accept secret key for encryption
+     * @param string $secretKey the encryption key
      */
     public function __construct($secretKey);
 

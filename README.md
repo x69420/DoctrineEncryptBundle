@@ -38,9 +38,16 @@ It is only able to encrypt string values at the moment, numbers and other fields
 
 ###Documentation
 
-The bulk of the documentation is stored in the `Resources/doc/index.md` file in this bundle
+This bundle is responsible for encryption/decryption of the data in your database.
+All encryption/decryption work on the server side.
 
-[Read the Documentation](https://github.com/marcel-ambta/DoctrineEncryptBundle/blob/master/Resources/doc/index.md)
+The following documents are available:
+
+* [Installation](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/installation.md)
+* [Configuration](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/configuration.md)
+* [Usage](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/usage.md)
+* [Console commands](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/commands.md)
+* [Cusom encryptor class](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/custom_encryptor.md)
 
 ###License
 
@@ -56,9 +63,9 @@ The following items will be done in order
 
 1. ~~Review of complete code + fixes/improvements and inline documentation (2.1.1)~~
 2. ~~Add support for the other doctrine relationships (manyToMany, ManyToOne) (2.2)~~
-4. Recreate documentation (2.3)
-5. Create example code (2.3)
-6. Create an function to encrypt unencrypted database and vice versa (console command, migration, changed key, etc.) (2.4)
+4. ~~Recreate documentation (2.3)~~
+5. ~~Create example code (2.3)~~
+6. ~~Create an function to encrypt unencrypted database and vice versa (console command, migration, changed key, etc.) (2.4)~~
 7. Look for a posibility of automatic encryption of query parameters (2.5)
 8. Look for a posibility to override findOneBy for automatic encryption of parameters (2.6)
 9. Add support to encrypt data by reference to other property as key (Encrypt data specific to user with user key etc.) (2.7)
@@ -68,8 +75,6 @@ The following items will be done in order
 
 #####Goals:
 
-- v2.3 - 22-04-2015
-- v2.4 - 30-04-2015
 - v2.5 - 31-04-2015
 - v2.6 - unknown
 - v2.7 - unknown

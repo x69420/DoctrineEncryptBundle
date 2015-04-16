@@ -27,10 +27,8 @@ class Configuration implements ConfigurationInterface {
         $rootNode
                 ->children()
                     ->scalarNode('secret_key')
-                        ->beforeNormalization()
-                        ->ifNull()
-                            ->thenInvalid('You must specify secret_key option')
-                        ->end()
+                    ->end()
+                    ->scalarNode('encryptor')
                     ->end()
                     ->scalarNode('encryptor_class')
                     ->end()

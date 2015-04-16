@@ -39,6 +39,30 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
     private $annReader;
 
     /**
+     * Secret key
+     * @var string
+     */
+    private $secretKey;
+
+    /**
+     * Used for restoring the encryptor after changing it
+     * @var string
+     */
+    private $restoreEncryptor;
+
+    /**
+     * Count amount of decrypted values in this service
+     * @var integer
+     */
+    public $decryptCounter = 0;
+
+    /**
+     * Count amount of encrypted values in this service
+     * @var integer
+     */
+    public $encryptCounter = 0;
+
+    /**
      * Initialization of subscriber
      *
      * @param Reader $annReader
@@ -50,11 +74,48 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
      */
     public function __construct(Reader $annReader, $encryptorClass, $secretKey, EncryptorInterface $service = NULL) {
         $this->annReader = $annReader;
+        $this->secretKey = $secretKey;
+
         if ($service instanceof EncryptorInterface) {
             $this->encryptor = $service;
         } else {
             $this->encryptor = $this->encryptorFactory($encryptorClass, $secretKey);
         }
+
+        $this->restoreEncryptor = $this->encryptor;
+    }
+
+    /**
+     * Change the encryptor
+     *
+     * @param $encryptorClass
+     */
+    public function setEncryptor($encryptorClass) {
+
+        if(!is_null($encryptorClass)) {
+            $this->encryptor = $this->encryptorFactory($encryptorClass, $this->secretKey);
+            return;
+        }
+
+        $this->encryptor = null;
+    }
+
+    /**
+     * Get the current encryptor
+     */
+    public function getEncryptor() {
+        if(!empty($this->encryptor)) {
+            return get_class($this->encryptor);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Restore encryptor set in config
+     */
+    public function restoreEncryptor() {
+        $this->encryptor = $this->restoreEncryptor;
     }
 
     /**
@@ -121,80 +182,90 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
      * @param Boolean $isEncryptOperation If true - encrypt, false - decrypt entity
      *
      * @throws \RuntimeException
+     *
+     * @return object|null
      */
-    private function processFields($entity, $isEncryptOperation = true) {
+    public function processFields($entity, $isEncryptOperation = true) {
 
-        //Check which operation to be used
-        $encryptorMethod = $isEncryptOperation ? 'encrypt' : 'decrypt';
+        if(!empty($this->encryptor)) {
 
-        //Get the real class, we don't want to use the proxy classes
-        if(strstr(get_class($entity), "Proxies")) {
-            $realClass = ClassUtils::getClass($entity);
-        } else {
-            $realClass = get_class($entity);
-        }
+            //Check which operation to be used
+            $encryptorMethod = $isEncryptOperation ? 'encrypt' : 'decrypt';
 
-        //Get ReflectionClass of our entity
-        $reflectionClass = new ReflectionClass($realClass);
-        $properties = $reflectionClass->getProperties();
+            //Get the real class, we don't want to use the proxy classes
+            if(strstr(get_class($entity), "Proxies")) {
+                $realClass = ClassUtils::getClass($entity);
+            } else {
+                $realClass = get_class($entity);
+            }
+
+            //Get ReflectionClass of our entity
+            $reflectionClass = new ReflectionClass($realClass);
+            $properties = $reflectionClass->getProperties();
 
 
-        //Foreach property in the reflection class
-        foreach ($properties as $refProperty) {
-
-            /**
-             * If followed standards, method name is getPropertyName, the propertyName is lowerCamelCase
-             * So just uppercase first character of the property, later on get and set{$methodName} wil be used
-             */
-            $methodName = ucfirst($refProperty->getName());
-
-            /**
-             * If property is an normal value and contains the Encrypt tag, lets encrypt/decrypt that property
-             */
-            if ($this->annReader->getPropertyAnnotation($refProperty, self::ENCRYPTED_ANN_NAME)) {
+            //Foreach property in the reflection class
+            foreach ($properties as $refProperty) {
 
                 /**
-                 * If it is public lets not use the getter/setter
+                 * If followed standards, method name is getPropertyName, the propertyName is lowerCamelCase
+                 * So just uppercase first character of the property, later on get and set{$methodName} wil be used
                  */
-                if ($refProperty->isPublic()) {
-                    $propName = $refProperty->getName();
-                    $entity->$propName = $this->encryptor->$encryptorMethod($refProperty->getValue());
-                } else {
-                    //If private or protected check if there is an getter/setter for the property, based on the $methodName
-                    if ($reflectionClass->hasMethod($getter = 'get' . $methodName) && $reflectionClass->hasMethod($setter = 'set' . $methodName)) {
+                $methodName = ucfirst($refProperty->getName());
 
-                        //Get the information (value) of the property
-                        try {
-                            $getInformation = $entity->$getter();
-                        } catch(\Exception $e) {
-                            $getInformation = null;
-                            var_dump($e);
-                        }
 
-                        /**
-                         * Then decrypt, encrypt the information if not empty, information is an string and the <ENC> tag is there (decrypt) or not (encrypt).
-                         * The <ENC> will be added at the end of an encrypted string so it is marked as encrypted. Also protects against double encryption/decryption
-                         */
-                        if($encryptorMethod == "decrypt") {
-                            if(!is_null($getInformation) and !empty($getInformation)) {
-                                if(substr($getInformation, -5) == "<ENC>") {
-                                    $currentPropValue = $this->encryptor->decrypt(substr($getInformation, 0, -5));
-                                    $entity->$setter($currentPropValue);
-                                }
+                /**
+                 * If property is an normal value and contains the Encrypt tag, lets encrypt/decrypt that property
+                 */
+                if ($this->annReader->getPropertyAnnotation($refProperty, self::ENCRYPTED_ANN_NAME)) {
+
+                    /**
+                     * If it is public lets not use the getter/setter
+                     */
+                    if ($refProperty->isPublic()) {
+                        $propName = $refProperty->getName();
+                        $entity->$propName = $this->encryptor->$encryptorMethod($refProperty->getValue());
+                    } else {
+                        //If private or protected check if there is an getter/setter for the property, based on the $methodName
+                        if ($reflectionClass->hasMethod($getter = 'get' . $methodName) && $reflectionClass->hasMethod($setter = 'set' . $methodName)) {
+
+                            //Get the information (value) of the property
+                            try {
+                                $getInformation = $entity->$getter();
+                            } catch(\Exception $e) {
+                                $getInformation = null;
                             }
-                        } else {
-                            if(!is_null($getInformation) and !empty($getInformation)) {
-                                if(substr($entity->$getter(), -5) != "<ENC>") {
-                                    $currentPropValue = $this->encryptor->encrypt($entity->$getter());
-                                    $entity->$setter($currentPropValue);
+
+                            /**
+                             * Then decrypt, encrypt the information if not empty, information is an string and the <ENC> tag is there (decrypt) or not (encrypt).
+                             * The <ENC> will be added at the end of an encrypted string so it is marked as encrypted. Also protects against double encryption/decryption
+                             */
+                            if($encryptorMethod == "decrypt") {
+                                if(!is_null($getInformation) and !empty($getInformation)) {
+                                    if(substr($getInformation, -5) == "<ENC>") {
+                                        $this->decryptCounter++;
+                                        $currentPropValue = $this->encryptor->decrypt(substr($getInformation, 0, -5));
+                                        $entity->$setter($currentPropValue);
+                                    }
+                                }
+                            } else {
+                                if(!is_null($getInformation) and !empty($getInformation)) {
+                                    if(substr($entity->$getter(), -5) != "<ENC>") {
+                                        $this->encryptCounter++;
+                                        $currentPropValue = $this->encryptor->encrypt($entity->$getter());
+                                        $entity->$setter($currentPropValue);
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
+
+            return $entity;
         }
 
+        return null;
     }
 
     /**
