@@ -201,8 +201,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
 
             //Get ReflectionClass of our entity
             $reflectionClass = new ReflectionClass($realClass);
-            $properties = $reflectionClass->getProperties();
-
+            $properties = $this->getClassProperties($realClass);
 
             //Foreach property in the reflection class
             foreach ($properties as $refProperty) {
@@ -218,6 +217,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
                  * If property is an normal value and contains the Encrypt tag, lets encrypt/decrypt that property
                  */
                 if ($this->annReader->getPropertyAnnotation($refProperty, self::ENCRYPTED_ANN_NAME)) {
+
 
                     /**
                      * If it is public lets not use the getter/setter
@@ -269,9 +269,39 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
     }
 
     /**
+     * Recursive function to get an associative array of class properties
+     * including inherited ones from extended classes
+     *
+     * @param string $className Class name
+     *
+     * @return array
+     */
+    function getClassProperties($className){
+
+        $reflectionClass = new ReflectionClass($className);
+        $properties = $reflectionClass->getProperties();
+        $propertiesArray = array();
+
+        foreach($properties as $property){
+            $propertyName = $property->getName();
+            $propertiesArray[$propertyName] = $property;
+        }
+
+        if($parentClass = $reflectionClass->getParentClass()){
+            $parentPropertiesArray = $this->getClassProperties($parentClass->getName());
+            if(count($parentPropertiesArray) > 0)
+                $propertiesArray = array_merge($parentPropertiesArray, $propertiesArray);
+        }
+
+        return $propertiesArray;
+    }
+
+    /**
      * Encryptor factory. Checks and create needed encryptor
+     *
      * @param string $classFullName Encryptor namespace and name
      * @param string $secretKey Secret key for encryptor
+     *
      * @return EncryptorInterface
      * @throws \RuntimeException
      */

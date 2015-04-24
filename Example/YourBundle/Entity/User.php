@@ -21,7 +21,7 @@ class User
     private $id;
 
     /**
-     * @Encrypted()
+     * @Encrypted
      * @ORM\Column(type="string", length=25, unique=true)
      */
     private $username;
@@ -37,7 +37,7 @@ class User
     private $isActive;
 
     /**
-     * @Encrypted()
+     * @Encrypted
      * @ORM\Column(name="roles", type="text")
      */
     private $roles;

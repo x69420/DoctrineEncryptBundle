@@ -4,7 +4,7 @@ There are 3 paramaters in the configuration of the Doctrine encryption bundle wh
 
 * **secret_key** - The key used to encrypt the data (256 bit)
     * 32 character long string
-    * Default: null, the bundle will use your Symfony2 secret key.
+    * Default: empty, the bundle will use your Symfony2 secret key.
 
 * **encryptor** - The encryptor used to encrypt the data
     * Encryptor name, currently available: rijndael128 and rijndael256
@@ -12,7 +12,7 @@ There are 3 paramaters in the configuration of the Doctrine encryption bundle wh
 
 * **encryptor_class** - Custom class for encrypting data
     * Encryptor class, [your own encryptor class](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/custom_encryptor.md) will override encryptor paramater
-    * Default: rijndael256
+    * Default: empty
     
 ## yaml
 
@@ -31,7 +31,7 @@ ambta_doctrine_encrypt:
         <ambta_doctrine_encrypt:secret_key>AB1CD2EF3GH4IJ5KL6MN7OP8QR9ST0UW</ambta_doctrine_encrypt:secret_key>
         <!-- rijndael256 or rijndael128 -->
         <ambta_doctrine_encrypt:encryptor>rijndael256</ambta_doctrine_encrypt:encryptor>
-        <!-- \Ambta\DoctrineEncryptBundle\Encryptors\Rijndael256Encryptor -->
+        <!-- your own encryption class -->
         <ambta_doctrine_encrypt:encryptor_class>\Ambta\DoctrineEncryptBundle\Encryptors\Rijndael256Encryptor</ambta_doctrine_encrypt:encryptor_class>
 </ambta_doctrine_encrypt:config>
 ```

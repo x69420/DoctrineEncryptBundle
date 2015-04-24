@@ -47,7 +47,7 @@ The following documents are available:
 * [Configuration](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/configuration.md)
 * [Usage](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/usage.md)
 * [Console commands](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/commands.md)
-* [Cusom encryptor class](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/custom_encryptor.md)
+* [Custom encryption class](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/custom_encryptor.md)
 
 ###License
 

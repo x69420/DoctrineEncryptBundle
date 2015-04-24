@@ -17,16 +17,16 @@ The result will look like this:
 DoctrineEncrypt\Entity\User has 3 properties which are encrypted.
 DoctrineEncrypt\Entity\UserDetail has 13 properties which are encrypted.
 
-2 entity's found which are containing 15 encrypted properties.
+2 entity's found which are containing 16 encrypted properties.
 ```
 
 ## 2) Encrypt current database
 
 You can use the comment `doctrine:encrypt:database [encryptor]` to encrypt the current database.
 
-* Parameter encryptor
+* Optional parameter [encryptor]
     * An encryptor provided by the bundle (rijndael256 or rijndael128) or your own [encryption class](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/custom_encryptor.md).
-    * Default: Your encryptor set in the configuration file or the default encryptor when not set in the configuration file
+    * Default: Your encryptor set in the configuration file or the default encryption class when not set in the configuration file
 
 ```
 $ php app/console doctrine:encrypt:database
@@ -53,9 +53,9 @@ Encryption finished values encrypted: 203 values.
 
 You can use the comment `doctrine:decrypt:database [encryptor]` to decrypt the current database.
 
-* Parameter encryptor
+* Optional parameter [encryptor]
     * An encryptor provided by the bundle (rijndael256 or rijndael128) or your own [encryption class](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/custom_encryptor.md).
-    * Default: Your encryptor set in the configuration file or the default encryptor when not set in the configuration file
+    * Default: Your encryptor set in the configuration file or the default encryption class when not set in the configuration file
 
 ```
 $ php app/console doctrine:encrypt:database
