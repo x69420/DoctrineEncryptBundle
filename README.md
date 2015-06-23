@@ -70,12 +70,3 @@ The following items will be done in order
 8. Look for a posibility to override findOneBy for automatic encryption of parameters (2.6)
 9. Add support to encrypt data by reference to other property as key (Encrypt data specific to user with user key etc.) (2.7)
 10. Add [Format-preserving encryption](http://en.wikipedia.org/wiki/Format-preserving_encryption) for all data types [Doctrine documentation Types](http://doctrine-dbal.readthedocs.org/en/latest/reference/types.html) (3.0)
-
-####Roadmap
-
-#####Goals:
-
-- v2.5 - 31-04-2015
-- v2.6 - unknown
-- v2.7 - unknown
-- v3.0 - 20-05-2015

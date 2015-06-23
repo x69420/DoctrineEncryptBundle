@@ -141,15 +141,13 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
      * @param PreUpdateEventArgs $args
      */
     public function preUpdate(PreUpdateEventArgs $args) {
-
         $entity = $args->getEntity();
         $this->processFields($entity);
-
     }
 
     /**
      * Listen a postLoad lifecycle event.
-     * Decrypt entity's property's values when loaded into the entity manger
+     * Decrypt entities property's values when loaded into the entity manger
      *
      * @param LifecycleEventArgs $args
      */
@@ -162,6 +160,19 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
     }
 
     /**
+     * Listen to preflush event
+     * Encrypt entities that are inserted into the database
+     *
+     * @param \Doctrine\ORM\Event\PreFlushEventArgs $preFlushEventArgs
+     */
+    public function preFlush(\Doctrine\ORM\Event\PreFlushEventArgs $preFlushEventArgs) {
+        $unitOfWork = $preFlushEventArgs->getEntityManager()->getUnitOfWork();
+        foreach($unitOfWork->getScheduledEntityInsertions() as $entity) {
+            $this->processFields($entity);
+        }
+    }
+
+    /**
      * Realization of EventSubscriber interface method.
      *
      * @return Array Return all events which this subscriber is listening
@@ -171,10 +182,10 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
             Events::postUpdate,
             Events::preUpdate,
             Events::postLoad,
+            Events::preFlush
         );
     }
-
-
+    
     /**
      * Process (encrypt/decrypt) entities fields
      *
