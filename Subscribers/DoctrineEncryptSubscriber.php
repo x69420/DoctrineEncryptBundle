@@ -120,7 +120,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
 
     /**
      * Listen a postUpdate lifecycle event.
-     * Decrypt entity's property's values when post updated.
+     * Decrypt entities property's values when post updated.
      *
      * So for example after form submit the preUpdate encrypted the entity
      * We have to decrypt them before showing them again.
@@ -136,7 +136,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
 
     /**
      * Listen a preUpdate lifecycle event.
-     * Encrypt entity's property's values on preUpdate, so they will be stored encrypted
+     * Encrypt entities property's values on preUpdate, so they will be stored encrypted
      *
      * @param PreUpdateEventArgs $args
      */
