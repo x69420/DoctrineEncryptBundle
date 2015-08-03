@@ -57,6 +57,6 @@ class DoctrineEncryptStatusCommand extends ContainerAwareCommand
         }
 
         $output->writeln("");
-        $output->writeln(count($metaDataArray) . " entity's found which are containing " . $totalCount . " encrypted properties.");
+        $output->writeln(count($metaDataArray) . " entities found which are containing " . $totalCount . " encrypted properties.");
     }
 }
