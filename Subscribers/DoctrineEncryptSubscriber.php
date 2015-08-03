@@ -6,6 +6,7 @@ use Doctrine\ORM\Events;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
+use Doctrine\ORM\Event\PreFlushEventArgs;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\Util\ClassUtils;
 use \ReflectionClass;
@@ -120,7 +121,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
 
     /**
      * Listen a postUpdate lifecycle event.
-     * Decrypt entities property's values when post updated.
+     * Decrypt entity's property's values when post updated.
      *
      * So for example after form submit the preUpdate encrypted the entity
      * We have to decrypt them before showing them again.
@@ -136,7 +137,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
 
     /**
      * Listen a preUpdate lifecycle event.
-     * Encrypt entities property's values on preUpdate, so they will be stored encrypted
+     * Encrypt entity's property's values on preUpdate, so they will be stored encrypted
      *
      * @param PreUpdateEventArgs $args
      */
@@ -163,9 +164,9 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
      * Listen to preflush event
      * Encrypt entities that are inserted into the database
      *
-     * @param \Doctrine\ORM\Event\PreFlushEventArgs $preFlushEventArgs
+     * @param PreFlushEventArgs $preFlushEventArgs
      */
-    public function preFlush(\Doctrine\ORM\Event\PreFlushEventArgs $preFlushEventArgs) {
+    public function preFlush(PreFlushEventArgs $preFlushEventArgs) {
         $unitOfWork = $preFlushEventArgs->getEntityManager()->getUnitOfWork();
         foreach($unitOfWork->getScheduledEntityInsertions() as $entity) {
             $this->processFields($entity);
@@ -185,7 +186,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
             Events::preFlush
         );
     }
-    
+
     /**
      * Process (encrypt/decrypt) entities fields
      *

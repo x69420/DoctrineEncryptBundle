@@ -56,6 +56,9 @@ class Rijndael128Encryptor implements EncryptorInterface {
     public function decrypt($data) {
 
         if(is_string($data)) {
+
+            $data = str_replace("<ENC>", "", $data);
+
             return trim(mcrypt_decrypt(
                 MCRYPT_RIJNDAEL_128,
                 $this->secretKey,

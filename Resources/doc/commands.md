@@ -10,14 +10,14 @@ You can use the comment `doctrine:encrypt:status` to get the current database an
 $ php app/console doctrine:encrypt:status
 ```
 
-This command will return the amount of entities and the amount of properties with the @Encrypted tag for each entity.
+This command will return the amount of entity's and the amount of properties with the @Encrypted tag for each entity.
 The result will look like this:
 
 ```
 DoctrineEncrypt\Entity\User has 3 properties which are encrypted.
 DoctrineEncrypt\Entity\UserDetail has 13 properties which are encrypted.
 
-2 entities found which are containing 16 encrypted properties.
+2 entity's found which are containing 16 encrypted properties.
 ```
 
 ## 2) Encrypt current database
@@ -71,7 +71,7 @@ $ php app/console doctrine:encrypt:database rijndael256
 $ php app/console doctrine:encrypt:database \Ambta\DoctrineEncryptBundle\Encryptors\Rijndael256Encryptor
 ```
 
-This command will return the amount of entities and the amount of values decrypted in the database.
+This command will return the amount of entity's and the amount of values decrypted in the database.
 
 ```
 Decryption finished entities found: 26, decrypted 195 values.
