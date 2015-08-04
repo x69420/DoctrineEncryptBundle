@@ -119,6 +119,6 @@ class DoctrineEncryptDatabaseCommand extends ContainerAwareCommand
         }
 
         //Say it is finished
-        $output->writeln("\nEncryption finished values encrypted: " . $subscriber->encryptCounter . " values.\nAll values are now decrypted.");
+        $output->writeln("\nEncryption finished values encrypted: " . $subscriber->encryptCounter . " values.\nAll values are now encrypted.");
     }
 }
