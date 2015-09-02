@@ -2,6 +2,7 @@
 
 namespace Ambta\DoctrineEncryptBundle\Subscribers;
 
+use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Events;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Event\LifecycleEventArgs;
@@ -174,6 +175,21 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
     }
 
     /**
+     * Listen to postFlush event
+     * Decrypt entities that after inserted into the database
+     *
+     * @param PostFlushEventArgs $postFlushEventArgs
+     */
+    public function postFlush(PostFlushEventArgs $postFlushEventArgs) {
+        $unitOfWork = $postFlushEventArgs->getEntityManager()->getUnitOfWork();
+        foreach($unitOfWork->getIdentityMap() as $entityMap) {
+            foreach($entityMap as $entity) {
+                $this->processFields($entity, false);
+            }
+        }
+    }
+
+    /**
      * Realization of EventSubscriber interface method.
      *
      * @return Array Return all events which this subscriber is listening
@@ -183,7 +199,8 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
             Events::postUpdate,
             Events::preUpdate,
             Events::postLoad,
-            Events::preFlush
+            Events::preFlush,
+            Events::postFlush
         );
     }
 
