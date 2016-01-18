@@ -66,7 +66,9 @@ class DoctrineDecryptDatabaseCommand extends ContainerAwareCommand
         //Set counter and loop through entity manager meta data
         $propertyCount = 0;
         foreach($metaDataArray as $metaData) {
-
+            if ($metaData->isMappedSuperclass) {
+                continue;
+            }
             //Create reflectionClass for each entity
             $reflectionClass = New \ReflectionClass($metaData->name);
             $propertyArray = $reflectionClass->getProperties();
@@ -95,6 +97,9 @@ class DoctrineDecryptDatabaseCommand extends ContainerAwareCommand
 
         //Loop through entity manager meta data
         foreach($metaDataArray as $metaData) {
+            if ($metaData->isMappedSuperclass) {
+                continue;
+            }
 
             //Create reflectionClass for each meta data object
             $reflectionClass = New \ReflectionClass($metaData->name);

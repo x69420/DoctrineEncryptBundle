@@ -41,6 +41,9 @@ class DoctrineEncryptStatusCommand extends ContainerAwareCommand
 
         $totalCount = 0;
         foreach($metaDataArray as $metaData) {
+            if ($metaData->isMappedSuperclass) {
+                continue;
+            }
 
             $reflectionClass = New \ReflectionClass($metaData->name);
             $propertyArray = $reflectionClass->getProperties();
