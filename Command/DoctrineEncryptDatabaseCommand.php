@@ -8,6 +8,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 
 /**
  * Hello World command for demo purposes.
@@ -34,9 +35,9 @@ class DoctrineEncryptDatabaseCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        //Get entity manager, dialog helper, subscriber service and annotation reader
+        //Get entity manager, question helper, subscriber service and annotation reader
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $dialog = $this->getHelper('dialog');
+        $question = $this->getHelper('question');
         $subscriber = $this->getContainer()->get('ambta_doctrine_encrypt.subscriber');
         $annotationReader = new AnnotationReader();
 
@@ -79,12 +80,9 @@ class DoctrineEncryptDatabaseCommand extends ContainerAwareCommand
             }
         }
 
-        //Create confirmation dialog
-        if (!$dialog->askConfirmation(
-            $output,
-            "<question>\n" . count($metaDataArray) . " entitys found which are containing " . $propertyCount . " properties with the encryption tag. \n\nWhich are going to be encrypted with [" . $subscriber->getEncryptor() . "]. \n\nWrong settings can mess up your data and it will be unrecoverable. \nI advise you to make <bg=yellow;options=bold>a backup</bg=yellow;options=bold>. \n\nContinu with this action? (y/yes)</question>",
-            false
-        )) {
+        $confirmationQuestion = new ConfirmationQuestion("<question>\n" . count($metaDataArray) . " entitys found which are containing " . $propertyCount . " properties with the encryption tag. \n\nWhich are going to be encrypted with [" . $subscriber->getEncryptor() . "]. \n\nWrong settings can mess up your data and it will be unrecoverable. \nI advise you to make <bg=yellow;options=bold>a backup</bg=yellow;options=bold>. \n\nContinu with this action? (y/yes)</question>", false);
+
+        if (!$question->ask($input, $output, $confirmationQuestion)) {
             return;
         }
 
