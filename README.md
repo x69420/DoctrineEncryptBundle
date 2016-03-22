@@ -14,7 +14,7 @@ More about us can be found on our website. [Ambta.com](https://ambta.com)
 
 It gives you the opportunity to add the @Encrypt annotation above each string property
 
-```
+```php
 /**
  * @Encrypt
  */
