@@ -101,6 +101,20 @@ class DoctrineDecryptDatabaseCommand extends ContainerAwareCommand
 
             //Create reflectionClass for each meta data object
             $reflectionClass = New \ReflectionClass($metaData->name);
+            $propertyArray = $reflectionClass->getProperties();
+            $propertyCount = 0;
+
+            //Count propperties in metadata
+            foreach ($propertyArray as $property) {
+                if ($annotationReader->getPropertyAnnotation($property, "Ambta\DoctrineEncryptBundle\Configuration\Encrypted")) {
+                    $propertyCount++;
+                }
+            }
+
+            if ($propertyCount === 0) {
+                continue;
+            }
+
 
             //If class is not an superclass
             if (!$annotationReader->getClassAnnotation($reflectionClass, "Doctrine\ORM\Mapping\MappedSuperclass")) {
