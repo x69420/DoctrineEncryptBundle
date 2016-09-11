@@ -99,4 +99,55 @@ ambta_doctrine_encrypt:
 
 Now your encryption is used to encrypt and decrypt data in the database.
 
+# Store the key in a file
+
+If you want to store the key outside your application it is possible thanks to CompilerPass component. First you'll have to create your compiler.
+
+``` php
+<?php
+
+namespace Foo\AcmeBundle\DependencyInjection\Compiler;
+
+use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+
+class ChangeSecretKeyAESCompiler implements CompilerPassInterface
+{
+    public function process(ContainerBuilder $container)
+    {
+        $container->setParameter(
+            'vmelnik_doctrine_encrypt.secret_key',
+            file_get_contents('../keys/aes256_secret.key') // You can choose whatever you want, you can also get the path from a parameter from config.yml
+        );
+    }
+}
+
+```
+
+Then you need to register your compiler in the bundle's definition
+
+
+```php
+<?php
+
+namespace Foo\AcmeBundme;
+
+use Foo\AcmeBundme\DependencyInjection\Compiler\ChangeSecretKeyAESCompiler;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\HttpKernel\Bundle\Bundle;
+
+class FooAcmeBundle extends Bundle
+{
+    public function build(ContainerBuilder $container)
+    {
+        parent::build($container);
+
+        $container->addCompilerPass(new ChangeSecretKeyAESCompiler());
+    }
+}
+
+```
+
+And that's it ! Now you rely on a file instead of a configuration value
+
 #### [Back to the index](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/index.md)
