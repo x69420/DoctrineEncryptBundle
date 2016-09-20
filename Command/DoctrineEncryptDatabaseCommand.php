@@ -12,10 +12,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 
 /**
- * Hello World command for demo purposes.
- *
+ * Batch encryption for the database
  *
  * @author Marcel van Nuil <marcel@ambta.com>
+ * @author Michael Feinbier <michael@feinbier.net>
  */
 class DoctrineEncryptDatabaseCommand extends ContainerAwareCommand
 {
@@ -27,8 +27,8 @@ class DoctrineEncryptDatabaseCommand extends ContainerAwareCommand
     {
         $this
             ->setName('doctrine:encrypt:database')
-            ->setDescription('Decrypt whole database on tables which are encrypted')
-            ->addArgument('encryptor', InputArgument::OPTIONAL, 'The encryptor u want to decrypt the database with')
+            ->setDescription('Encrypt whole database on tables which are not encrypted yet')
+            ->addArgument('encryptor', InputArgument::OPTIONAL, 'The encryptor you want to decrypt the database with')
             ->addArgument('batchSize', InputArgument::OPTIONAL, 'The update/flush batch size', 20);
 
     }
@@ -57,9 +57,9 @@ class DoctrineEncryptDatabaseCommand extends ContainerAwareCommand
                 {
                     $subscriber->setEncryptor($input->getArgument('encryptor'));
                 } else {
-                    $output->writeln("\nGiven encryptor does not exists");
-                    $output->writeln("Supported encryptors: " . implode(", ", array_keys($supportedExtensions)));
-                    $output->writeln("You can also define your own class. (example: Ambta\DoctrineEncryptBundle\Encryptors\Rijndael128Encryptor)");
+                    $output->writeln('\nGiven encryptor does not exists');
+                    $output->writeln('Supported encryptors: ' . implode(', ', array_keys($supportedExtensions)));
+                    $output->writeln('You can also define your own class. (example: Ambta\DoctrineEncryptBundle\Encryptors\Rijndael128Encryptor)');
                     return;
                 }
             }
@@ -81,20 +81,20 @@ class DoctrineEncryptDatabaseCommand extends ContainerAwareCommand
 
             //Count propperties in metadata
             foreach($propertyArray as $property) {
-                if($annotationReader->getPropertyAnnotation($property, "Ambta\DoctrineEncryptBundle\Configuration\Encrypted")) {
+                if($annotationReader->getPropertyAnnotation($property, 'Ambta\DoctrineEncryptBundle\Configuration\Encrypted')) {
                     $propertyCount++;
                 }
             }
         }
 
-        $confirmationQuestion = new ConfirmationQuestion("<question>\n" . count($metaDataArray) . " entitys found which are containing " . $propertyCount . " properties with the encryption tag. \n\nWhich are going to be encrypted with [" . $subscriber->getEncryptor() . "]. \n\nWrong settings can mess up your data and it will be unrecoverable. \nI advise you to make <bg=yellow;options=bold>a backup</bg=yellow;options=bold>. \n\nContinu with this action? (y/yes)</question>", false);
+        $confirmationQuestion = new ConfirmationQuestion("<question>\n" . count($metaDataArray) . " entities found which are containing " . $propertyCount . " properties with the encryption tag. \n\nWhich are going to be encrypted with [" . $subscriber->getEncryptor() . "]. \n\nWrong settings can mess up your data and it will be unrecoverable. \nI advise you to make <bg=yellow;options=bold>a backup</bg=yellow;options=bold>. \n\nContinue with this action? (y/yes)</question>", false);
 
         if (!$question->ask($input, $output, $confirmationQuestion)) {
             return;
         }
 
         //Start decrypting database
-        $output->writeln("\nEncrypting all fields this can take up to several minutes depending on the database size.");
+        $output->writeln("\nEncrypting all fields can take up to several minutes depending on the database size.");
 
         //Loop through entity manager meta data
         foreach($metaDataArray as $metaData) {
@@ -109,7 +109,7 @@ class DoctrineEncryptDatabaseCommand extends ContainerAwareCommand
 
             //Count propperties in metadata
             foreach ($propertyArray as $property) {
-                if ($annotationReader->getPropertyAnnotation($property, "Ambta\DoctrineEncryptBundle\Configuration\Encrypted")) {
+                if ($annotationReader->getPropertyAnnotation($property, 'Ambta\DoctrineEncryptBundle\Configuration\Encrypted')) {
                     $propertyCount++;
                 }
             }
@@ -120,7 +120,7 @@ class DoctrineEncryptDatabaseCommand extends ContainerAwareCommand
 
             //If class is not an superclass
             $i = 0;
-            if (!$annotationReader->getClassAnnotation($reflectionClass, "Doctrine\ORM\Mapping\MappedSuperclass")) {
+            if (!$annotationReader->getClassAnnotation($reflectionClass, 'Doctrine\ORM\Mapping\MappedSuperclass')) {
                 $iterator = $this->getEntityIterator($entityManager, $metaData->name);
                 $totalCount = $this->getTableCount($entityManager, $metaData->name);
 
@@ -144,7 +144,7 @@ class DoctrineEncryptDatabaseCommand extends ContainerAwareCommand
         }
 
         //Say it is finished
-        $output->writeln("\nEncryption finished values encrypted: " . $subscriber->encryptCounter . " values.\nAll values are now encrypted.");
+        $output->writeln("\nEncryption finished. Values encrypted: <info>" . $subscriber->encryptCounter . " values</info>.\nAll values are now encrypted.");
     }
 
     /**
