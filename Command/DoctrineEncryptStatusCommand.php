@@ -2,20 +2,16 @@
 
 namespace Ambta\DoctrineEncryptBundle\Command;
 
-use Doctrine\Common\Annotations\AnnotationReader;
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Hello World command for demo purposes.
- *
- * You could also extend from Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand
- * to get access to the container via $this->getContainer().
+ * Get status of doctrine encrypt bundle and the database.
  *
  * @author Marcel van Nuil <marcel@ambta.com>
+ * @author Michael Feinbier <michael@feinbier.net>
  */
-class DoctrineEncryptStatusCommand extends ContainerAwareCommand
+class DoctrineEncryptStatusCommand extends AbstractCommand
 {
 
     /**
@@ -33,11 +29,7 @@ class DoctrineEncryptStatusCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $annotationReader = new AnnotationReader();
-
-        $em = $this->getContainer()->get('doctrine.orm.entity_manager');
-
-        $metaDataArray = $em->getMetadataFactory()->getAllMetadata();
+        $metaDataArray = $this->entityManager->getMetadataFactory()->getAllMetadata();
 
         $totalCount = 0;
         foreach($metaDataArray as $metaData) {
@@ -45,21 +37,21 @@ class DoctrineEncryptStatusCommand extends ContainerAwareCommand
                 continue;
             }
 
-            $reflectionClass = New \ReflectionClass($metaData->name);
-            $propertyArray = $reflectionClass->getProperties();
             $count = 0;
-
-            foreach($propertyArray as $property) {
-                if($annotationReader->getPropertyAnnotation($property, "Ambta\DoctrineEncryptBundle\Configuration\Encrypted")) {
-                    $count++;
-                    $totalCount++;
-                }
+            $encryptedPropertiesCount = count($this->getEncryptionableProperties($metaData));
+            if ($encryptedPropertiesCount > 0) {
+                $totalCount += $encryptedPropertiesCount;
+                $count += $encryptedPropertiesCount;
             }
 
-            $output->writeln($metaData->name . " has " . $count . " properties which are encrypted.");
+            if ($count > 0) {
+                $output->writeln(sprintf('<info>%s</info> has <info>%d</info> properties which are encrypted.', $metaData->name, $count));
+            } else {
+                $output->writeln(sprintf('<info>%s</info> has no properties which are encrypted.', $metaData->name));
+            }
         }
 
-        $output->writeln("");
-        $output->writeln(count($metaDataArray) . " entities found which are containing " . $totalCount . " encrypted properties.");
+        $output->writeln('');
+        $output->writeln(sprintf('<info>%d</info> entities found which are containing <info>%d</info> encrypted properties.', count($metaDataArray), $totalCount));
     }
 }
