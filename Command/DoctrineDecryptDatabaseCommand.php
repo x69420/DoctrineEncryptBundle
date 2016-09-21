@@ -5,18 +5,19 @@ namespace Ambta\DoctrineEncryptBundle\Command;
 use Ambta\DoctrineEncryptBundle\DependencyInjection\DoctrineEncryptExtension;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 
 /**
- * Hello World command for demo purposes.
- *
+ * Decrypt whole database on tables which are encrypted
  *
  * @author Marcel van Nuil <marcel@ambta.com>
+ * @author Michael Feinbier <michael@feinbier.net>
  */
-class DoctrineDecryptDatabaseCommand extends ContainerAwareCommand
+class DoctrineDecryptDatabaseCommand extends AbstractCommand
 {
 
     /**
@@ -27,7 +28,8 @@ class DoctrineDecryptDatabaseCommand extends ContainerAwareCommand
         $this
             ->setName('doctrine:decrypt:database')
             ->setDescription('Decrypt whole database on tables which are encrypted')
-            ->addArgument("encryptor", InputArgument::OPTIONAL, "The encryptor u want to decrypt the database with");
+            ->addArgument("encryptor", InputArgument::OPTIONAL, 'The encryptor you want to decrypt the database with')
+            ->addArgument('batchSize', InputArgument::OPTIONAL, 'The update/flush batch size', 20);
     }
 
     /**
@@ -36,33 +38,31 @@ class DoctrineDecryptDatabaseCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         //Get entity manager, question helper, subscriber service and annotation reader
-        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
         $question = $this->getHelper('question');
-        $subscriber = $this->getContainer()->get('ambta_doctrine_encrypt.subscriber');
-        $annotationReader = new AnnotationReader();
 
         //Get list of supported encryptors
         $supportedExtensions = DoctrineEncryptExtension::$supportedEncryptorClasses;
+        $batchSize = $input->getArgument('batchSize');
 
         //If encryptor has been set use that encryptor else use default
         if($input->getArgument('encryptor')) {
             if(isset($supportedExtensions[$input->getArgument('encryptor')])) {
-                $subscriber->setEncryptor($supportedExtensions[$input->getArgument('encryptor')]);
+                $this->subscriber->setEncryptor($supportedExtensions[$input->getArgument('encryptor')]);
             } else {
                 if(class_exists($input->getArgument('encryptor')))
                 {
-                    $subscriber->setEncryptor($input->getArgument('encryptor'));
+                    $this->subscriber->setEncryptor($input->getArgument('encryptor'));
                 } else {
-                    $output->writeln("\nGiven encryptor does not exists");
-                    $output->writeln("Supported encryptors: " . implode(", ", array_keys($supportedExtensions)));
-                    $output->writeln("You can also define your own class. (example: Ambta\DoctrineEncryptBundle\Encryptors\Rijndael128Encryptor)");
+                    $output->writeln('\nGiven encryptor does not exists');
+                    $output->writeln('Supported encryptors: ' . implode(', ', array_keys($supportedExtensions)));
+                    $output->writeln('You can also define your own class. (example: Ambta\DoctrineEncryptBundle\Encryptors\Rijndael128Encryptor)');
                     return;
                 }
             }
         }
 
         //Get entity manager metadata
-        $metaDataArray = $entityManager->getMetadataFactory()->getAllMetadata();
+        $metaDataArray = $this->entityManager->getMetadataFactory()->getAllMetadata();
 
         //Set counter and loop through entity manager meta data
         $propertyCount = 0;
@@ -70,113 +70,94 @@ class DoctrineDecryptDatabaseCommand extends ContainerAwareCommand
             if ($metaData->isMappedSuperclass) {
                 continue;
             }
-            //Create reflectionClass for each entity
-            $reflectionClass = New \ReflectionClass($metaData->name);
-            $propertyArray = $reflectionClass->getProperties();
 
-            //Count propperties in metadata
-            foreach($propertyArray as $property) {
-                if($annotationReader->getPropertyAnnotation($property, "Ambta\DoctrineEncryptBundle\Configuration\Encrypted")) {
-                    $propertyCount++;
-                }
-            }
+            $countProperties = count($this->getEncryptionableProperties($metaData));
+            $propertyCount += $countProperties;
         }
 
-        $confirmationQuestion = new ConfirmationQuestion("<question>\n" . count($metaDataArray) . " entitys found which are containing " . $propertyCount . " properties with the encryption tag. \n\nWhich are going to be decrypted with [" . $subscriber->getEncryptor() . "]. \n\nWrong settings can mess up your data and it will be unrecoverable. \nI advise you to make <bg=yellow;options=bold>a backup</bg=yellow;options=bold>. \n\nContinu with this action? (y/yes)</question>", false);
+        $confirmationQuestion = new ConfirmationQuestion(
+            "<question>\n" . count($metaDataArray) . " entities found which are containing " . $propertyCount . " properties with the encryption tag. \n\n" .
+            "Which are going to be decrypted with [" . $this->subscriber->getEncryptor() . "]. \n\n" .
+            "Wrong settings can mess up your data and it will be unrecoverable. \n" .
+            "I advise you to make <bg=yellow;options=bold>a backup</bg=yellow;options=bold>. \n\n" .
+            "Continue with this action? (y/yes)</question>", false
+        );
 
         if (!$question->ask($input, $output, $confirmationQuestion)) {
             return;
         }
 
         //Start decrypting database
-        $output->writeln("\nDecrypting all fields this can take up to several minutes depending on the database size.");
+        $output->writeln("\nDecrypting all fields. This can take up to several minutes depending on the database size.");
 
         $valueCounter = 0;
 
         //Loop through entity manager meta data
-        foreach($metaDataArray as $metaData) {
-            if ($metaData->isMappedSuperclass) {
-                continue;
-            }
+        foreach($this->getEncryptionableEntityMetaData() as $metaData) {
+            $i = 0;
+            $iterator = $this->getEntityIterator($metaData->name);
+            $totalCount = $this->getTableCount($metaData->name);
 
-            //Create reflectionClass for each meta data object
-            $reflectionClass = New \ReflectionClass($metaData->name);
-            $propertyArray = $reflectionClass->getProperties();
-            $propertyCount = 0;
+            $output->writeln(sprintf('Processing <comment>%s</comment>', $metaData->name));
+            $progressBar = new ProgressBar($output, $totalCount);
+            foreach($iterator as $row) {
+                $entity = $row[0];
 
-            //Count propperties in metadata
-            foreach ($propertyArray as $property) {
-                if ($annotationReader->getPropertyAnnotation($property, "Ambta\DoctrineEncryptBundle\Configuration\Encrypted")) {
-                    $propertyCount++;
-                }
-            }
+                //Create reflectionClass for each entity
+                $entityReflectionClass = New \ReflectionClass($entity);
 
-            if ($propertyCount === 0) {
-                continue;
-            }
+                //Get the current encryptor used
+                $encryptorUsed = $this->subscriber->getEncryptor();
 
+                //Loop through the property's in the entity
+                foreach($this->getEncryptionableProperties($metaData) as $property) {
+                    //Get and check getters and setters
+                    $methodeName = ucfirst($property->getName());
 
-            //If class is not an superclass
-            if (!$annotationReader->getClassAnnotation($reflectionClass, "Doctrine\ORM\Mapping\MappedSuperclass")) {
+                    $getter = "get" . $methodeName;
+                    $setter = "set" . $methodeName;
 
-                /**
-                 * Get repository and entity Array
-                 * @var \Doctrine\ORM\EntityRepository $repository
-                 */
-                $repository = $entityManager->getRepository($metaData->name);
-                $entityArray = $repository->findAll();
+                    //Check if getter and setter are set
+                    if($entityReflectionClass->hasMethod($getter) && $entityReflectionClass->hasMethod($setter)) {
 
-                foreach($entityArray as $entity) {
+                        //Get decrypted data
+                        $unencrypted = $entity->$getter();
 
-                    //Create reflectionClass for each entity
-                    $entityReflectionClass = New \ReflectionClass($entity);
-                    $propertyArray = $entityReflectionClass->getProperties();
+                        //Set raw data
+                        $entity->$setter($unencrypted);
 
-                    //Get the current encryptor used
-                    $encryptorUsed = $subscriber->getEncryptor();
-
-                    //Loop through the property's in the entity
-                    foreach($propertyArray as $property) {
-
-                        //If property is encrypted
-                        if($annotationReader->getPropertyAnnotation($property, "Ambta\DoctrineEncryptBundle\Configuration\Encrypted")) {
-
-                            //Get and check getters and setters
-                            $methodeName = ucfirst($property->getName());
-
-                            $getter = "get" . $methodeName;
-                            $setter = "set" . $methodeName;
-
-                            //Check if getter and setter are set
-                            if($entityReflectionClass->hasMethod($getter) && $entityReflectionClass->hasMethod($setter)) {
-
-                                //Get decrypted data
-                                $unencrypted = $entity->$getter();
-
-                                //Set raw data
-                                $entity->$setter($unencrypted);
-
-                                $valueCounter++;
-                            }
-                        }
+                        $valueCounter++;
                     }
-
-                    //Persist entity
-
-                    //Disable the encryptor
-                    $subscriber->setEncryptor(null);
-
-                    //Persist and flush entity
-                    $entityManager->persist($entity);
-                    $entityManager->flush($entity);
-
-                    //Set the encryptor again
-                    $subscriber->setEncryptor($encryptorUsed);
                 }
+
+                //Disable the encryptor
+                $this->subscriber->setEncryptor(null);
+                $this->entityManager->persist($entity);
+
+                if (($i % $batchSize) === 0) {
+                    $this->entityManager->flush();
+                    $this->entityManager->clear();
+                }
+                $progressBar->advance(1);
+                $i++;
+
+                //Set the encryptor again
+                $this->subscriber->setEncryptor($encryptorUsed);
             }
+
+
+            $progressBar->finish();
+            $output->writeln('');
+            //Get the current encryptor used
+            $encryptorUsed = $this->subscriber->getEncryptor();
+            $this->subscriber->setEncryptor(null);
+            $this->entityManager->flush();
+            $this->entityManager->clear();
+            //Set the encryptor again
+            $this->subscriber->setEncryptor($encryptorUsed);
         }
 
         //Say it is finished
-        $output->writeln("\nDecryption finished values found: " . $valueCounter . ", decrypted: " . $subscriber->decryptCounter . ".\nAll values are now decrypted.");
+        $output->writeln("\nDecryption finished values found: <info>" . $valueCounter . "</info>, decrypted: <info>" . $this->subscriber->decryptCounter . "</info>.\nAll values are now decrypted.");
     }
 }

@@ -3,8 +3,6 @@
 namespace Ambta\DoctrineEncryptBundle\Command;
 
 use Ambta\DoctrineEncryptBundle\DependencyInjection\DoctrineEncryptExtension;
-use Doctrine\ORM\EntityManager;
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -17,7 +15,7 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
  * @author Marcel van Nuil <marcel@ambta.com>
  * @author Michael Feinbier <michael@feinbier.net>
  */
-class DoctrineEncryptDatabaseCommand extends ContainerAwareCommand
+class DoctrineEncryptDatabaseCommand extends AbstractCommand
 {
 
     /**
@@ -39,10 +37,7 @@ class DoctrineEncryptDatabaseCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         //Get entity manager, question helper, subscriber service and annotation reader
-        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
         $question = $this->getHelper('question');
-        $subscriber = $this->getContainer()->get('ambta_doctrine_encrypt.subscriber');
-        $annotationReader = $this->getContainer()->get('annotation_reader');
         $batchSize = $input->getArgument('batchSize');
 
         //Get list of supported encryptors
@@ -51,11 +46,11 @@ class DoctrineEncryptDatabaseCommand extends ContainerAwareCommand
         //If encryptor has been set use that encryptor else use default
         if($input->getArgument('encryptor')) {
             if(isset($supportedExtensions[$input->getArgument('encryptor')])) {
-                $subscriber->setEncryptor($supportedExtensions[$input->getArgument('encryptor')]);
+                $this->subscriber->setEncryptor($supportedExtensions[$input->getArgument('encryptor')]);
             } else {
                 if(class_exists($input->getArgument('encryptor')))
                 {
-                    $subscriber->setEncryptor($input->getArgument('encryptor'));
+                    $this->subscriber->setEncryptor($input->getArgument('encryptor'));
                 } else {
                     $output->writeln('\nGiven encryptor does not exists');
                     $output->writeln('Supported encryptors: ' . implode(', ', array_keys($supportedExtensions)));
@@ -66,28 +61,14 @@ class DoctrineEncryptDatabaseCommand extends ContainerAwareCommand
         }
 
         //Get entity manager metadata
-        $metaDataArray = $entityManager->getMetadataFactory()->getAllMetadata();
-
-        //Set counter and loop through entity manager meta data
-        $propertyCount = 0;
-        foreach($metaDataArray as $metaData) {
-            if ($metaData->isMappedSuperclass) {
-                continue;
-            }
-
-            //Create reflectionClass for each entity
-            $reflectionClass = New \ReflectionClass($metaData->name);
-            $propertyArray = $reflectionClass->getProperties();
-
-            //Count propperties in metadata
-            foreach($propertyArray as $property) {
-                if($annotationReader->getPropertyAnnotation($property, 'Ambta\DoctrineEncryptBundle\Configuration\Encrypted')) {
-                    $propertyCount++;
-                }
-            }
-        }
-
-        $confirmationQuestion = new ConfirmationQuestion("<question>\n" . count($metaDataArray) . " entities found which are containing " . $propertyCount . " properties with the encryption tag. \n\nWhich are going to be encrypted with [" . $subscriber->getEncryptor() . "]. \n\nWrong settings can mess up your data and it will be unrecoverable. \nI advise you to make <bg=yellow;options=bold>a backup</bg=yellow;options=bold>. \n\nContinue with this action? (y/yes)</question>", false);
+        $metaDataArray = $this->getEncryptionableEntityMetaData();
+        $confirmationQuestion = new ConfirmationQuestion(
+            "<question>\n" . count($metaDataArray) . " entities found which are containing properties with the encryption tag.\n\n" .
+            "Which are going to be encrypted with [" . $this->subscriber->getEncryptor() . "]. \n\n".
+            "Wrong settings can mess up your data and it will be unrecoverable. \n" .
+            "I advise you to make <bg=yellow;options=bold>a backup</bg=yellow;options=bold>. \n\n" .
+            "Continue with this action? (y/yes)</question>", false
+        );
 
         if (!$question->ask($input, $output, $confirmationQuestion)) {
             return;
@@ -98,77 +79,31 @@ class DoctrineEncryptDatabaseCommand extends ContainerAwareCommand
 
         //Loop through entity manager meta data
         foreach($metaDataArray as $metaData) {
-            if ($metaData->isMappedSuperclass) {
-                continue;
-            }
-
-            //Create reflectionClass for each meta data object
-            $reflectionClass = New \ReflectionClass($metaData->name);
-            $propertyArray = $reflectionClass->getProperties();
-            $propertyCount = 0;
-
-            //Count propperties in metadata
-            foreach ($propertyArray as $property) {
-                if ($annotationReader->getPropertyAnnotation($property, 'Ambta\DoctrineEncryptBundle\Configuration\Encrypted')) {
-                    $propertyCount++;
-                }
-            }
-
-            if ($propertyCount === 0) {
-                continue;
-            }
-
-            //If class is not an superclass
             $i = 0;
-            if (!$annotationReader->getClassAnnotation($reflectionClass, 'Doctrine\ORM\Mapping\MappedSuperclass')) {
-                $iterator = $this->getEntityIterator($entityManager, $metaData->name);
-                $totalCount = $this->getTableCount($entityManager, $metaData->name);
+            $iterator = $this->getEntityIterator($metaData->name);
+            $totalCount = $this->getTableCount($metaData->name);
 
-                $output->writeln(sprintf('Processing <comment>%s</comment>', $metaData->name));
-                $progressBar = new ProgressBar($output, $totalCount);
-                foreach ($iterator as $row) {
-                    $subscriber->processFields($row[0]);
+            $output->writeln(sprintf('Processing <comment>%s</comment>', $metaData->name));
+            $progressBar = new ProgressBar($output, $totalCount);
+            foreach ($iterator as $row) {
+                $this->subscriber->processFields($row[0]);
 
-                    if (($i % $batchSize) === 0) {
-                        $entityManager->flush();
-                        $entityManager->clear();
-                        $progressBar->advance($batchSize);
-                    }
-                    $i++;
+                if (($i % $batchSize) === 0) {
+                    $this->entityManager->flush();
+                    $this->entityManager->clear();
+                    $progressBar->advance($batchSize);
                 }
-
-                $progressBar->finish();
-                $output->writeln('');
-                $entityManager->flush();
+                $i++;
             }
+
+            $progressBar->finish();
+            $output->writeln('');
+            $this->entityManager->flush();
         }
 
         //Say it is finished
-        $output->writeln("\nEncryption finished. Values encrypted: <info>" . $subscriber->encryptCounter . " values</info>.\nAll values are now encrypted.");
+        $output->writeln("\nEncryption finished. Values encrypted: <info>" . $this->subscriber->encryptCounter . " values</info>.\nAll values are now encrypted.");
     }
 
-    /**
-     * @param EntityManager $em
-     * @param               $name
-     *
-     * @return \Doctrine\ORM\Internal\Hydration\IterableResult
-     */
-    protected function getEntityIterator(EntityManager $em, $name)
-    {
-        $query = $em->createQuery(sprintf('SELECT o FROM %s o', $name));
-        return $query->iterate();
-    }
 
-    /**
-     * @param EntityManager $manager
-     * @param               $name
-     *
-     * @return integer
-     */
-    protected function getTableCount(EntityManager $manager, $name)
-    {
-        $query = $manager->createQuery(sprintf('SELECT COUNT(o) FROM %s o', $name));
-
-        return (int) $query->getSingleScalarResult();
-    }
 }
