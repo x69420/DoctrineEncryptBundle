@@ -123,7 +123,6 @@ class DoctrineDecryptDatabaseCommand extends AbstractCommand
                         //Get decrypted data
                         $unencrypted = $entity->$getter();
 
-                        $output->writeln($unencrypted);
                         //Set raw data
                         $entity->$setter($unencrypted);
 
