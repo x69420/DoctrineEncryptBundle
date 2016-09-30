@@ -36,14 +36,13 @@ class Rijndael128Encryptor implements EncryptorInterface {
     public function encrypt($data) {
 
         if(is_string($data)) {
-            $test = mcrypt_encrypt(
+            return trim(base64_encode(mcrypt_encrypt(
                 MCRYPT_RIJNDAEL_128,
                 $this->secretKey,
                 $data,
                 MCRYPT_MODE_ECB,
                 $this->initializationVector
-            );
-            return trim(base64_encode($test)). "<ENC>";
+            ))). "<ENC>";
         }
 
         return $data;
