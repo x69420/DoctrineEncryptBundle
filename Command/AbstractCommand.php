@@ -1,7 +1,7 @@
 <?php
-namespace Ambta\DoctrineEncryptBundle\Command;
+namespace Combodo\DoctrineEncryptBundle\Command;
 
-use Ambta\DoctrineEncryptBundle\Subscribers\DoctrineEncryptSubscriber;
+use Combodo\DoctrineEncryptBundle\Subscribers\DoctrineEncryptSubscriber;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -39,7 +39,7 @@ abstract class AbstractCommand extends ContainerAwareCommand
         $container = $this->getContainer();
         $this->entityManager = $container->get('doctrine.orm.entity_manager');
         $this->annotationReader = $container->get('annotation_reader');
-        $this->subscriber = $container->get('ambta_doctrine_encrypt.subscriber');
+        $this->subscriber = $container->get('combodo_doctrine_encrypt.subscriber');
     }
 
     /**
@@ -109,7 +109,7 @@ abstract class AbstractCommand extends ContainerAwareCommand
         $properties    = [];
 
         foreach ($propertyArray as $property) {
-            if ($this->annotationReader->getPropertyAnnotation($property, 'Ambta\DoctrineEncryptBundle\Configuration\Encrypted')) {
+            if ($this->annotationReader->getPropertyAnnotation($property, 'Combodo\DoctrineEncryptBundle\Configuration\Encrypted')) {
                 $properties[] = $property;
             }
         }

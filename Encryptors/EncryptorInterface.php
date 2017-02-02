@@ -1,6 +1,6 @@
 <?php
 
-namespace Ambta\DoctrineEncryptBundle\Encryptors;
+namespace Combodo\DoctrineEncryptBundle\Encryptors;
 
 /**
  * Encryptor interface for encryptors

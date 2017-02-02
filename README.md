@@ -5,10 +5,16 @@ help of some encryption algorithm in database and it will be clearly for develop
 
 This is an fork from the original bundle created by vmelnik-ukrain (Many thanks to him) which can be found here:
 [vmelnik-ukraine/DoctrineEncryptBundle](https://github.com/vmelnik-ukraine/DoctrineEncryptBundle)
+this is again a fork from the bundle [nepda/doctrine-encrypt](https://github.com/nepda/doctrine-encrypt) from Marcel van Nuil.
 
-I improved several things, i make better use of the doctrine events. and it works with lazy loading (relationships)!
-This will be an long term project we will be working on with long-term support and backward compatibility. We are using this bundle in all our own symfony2 project.
-More about us can be found on our website. [Ambta.com](https://ambta.com)
+## goal of this fork
+I only improved the Encryptor : multiple existed but they where base on mcrypt and had flaws. I replaced them with an openssl alternative, found partly from this fork (again!) : https://github.com/nepda/doctrine-encrypt/blob/master/src/DoctrineEncrypt/Encryptors/OpenSslEncryptor.php
+If the author accept to merge my change, I will probably close this fork.
+
+I also borrowed the "SensitiveValue" and "Mask" class from the great [payum](https://github.com/Payum/Payum) library in order to prevent the secret key to be printed (for more information, see [payum doc](https://github.com/Payum/Payum/blob/master/src/Payum/Core/Resources/docs/working-with-sensitive-information.md)).  
+
+## scope of this fork
+The rest of this file anf of the doc will probably remain the forked content. Exept for the namespaces and the authors list that I changed (the search & replace way).
 
 ###What does it do exactly
 
@@ -43,11 +49,11 @@ All encryption/decryption work on the server side.
 
 The following documents are available:
 
-* [Installation](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/installation.md)
-* [Configuration](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/configuration.md)
-* [Usage](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/usage.md)
-* [Console commands](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/commands.md)
-* [Custom encryption class](https://github.com/ambta/DoctrineEncryptBundle/blob/master/Resources/doc/custom_encryptor.md)
+* [Installation](https://github.com/combodo/DoctrineEncryptBundle/blob/master/Resources/doc/installation.md)
+* [Configuration](https://github.com/combodo/DoctrineEncryptBundle/blob/master/Resources/doc/configuration.md)
+* [Usage](https://github.com/combodo/DoctrineEncryptBundle/blob/master/Resources/doc/usage.md)
+* [Console commands](https://github.com/combodo/DoctrineEncryptBundle/blob/master/Resources/doc/commands.md)
+* [Custom encryption class](https://github.com/combodo/DoctrineEncryptBundle/blob/master/Resources/doc/custom_encryptor.md)
 
 ###License
 
@@ -70,3 +76,4 @@ The following items will be done in order
 8. Look for a posibility to override findOneBy for automatic encryption of parameters (2.6)
 9. Add support to encrypt data by reference to other property as key (Encrypt data specific to user with user key etc.) (2.7)
 10. Add [Format-preserving encryption](http://en.wikipedia.org/wiki/Format-preserving_encryption) for all data types [Doctrine documentation Types](http://doctrine-dbal.readthedocs.org/en/latest/reference/types.html) (3.0)
+

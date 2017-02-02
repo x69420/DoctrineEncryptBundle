@@ -1,6 +1,6 @@
 <?php
 
-namespace Ambta\DoctrineEncryptBundle\Command;
+namespace Combodo\DoctrineEncryptBundle\Command;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -8,8 +8,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * Get status of doctrine encrypt bundle and the database.
  *
- * @author Marcel van Nuil <marcel@ambta.com>
- * @author Michael Feinbier <michael@feinbier.net>
+ * @author Marcel van Nuil <marcel@ambta.com> (this bundle is forked from his work)
+ * @author Michael Feinbier <michael@feinbier.net> (this bundle is forked from his work)
+ * @author Bruno da silva <bruno.dasilva@combodo.com> (fork author)
  */
 class DoctrineEncryptStatusCommand extends AbstractCommand
 {

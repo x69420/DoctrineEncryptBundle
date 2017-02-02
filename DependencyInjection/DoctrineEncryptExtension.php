@@ -1,6 +1,6 @@
 <?php
 
-namespace Ambta\DoctrineEncryptBundle\DependencyInjection;
+namespace Combodo\DoctrineEncryptBundle\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
@@ -16,8 +16,8 @@ use Symfony\Component\DependencyInjection\Loader;
  */
 class DoctrineEncryptExtension extends Extension {
 
-    public static $supportedEncryptorClasses = array('rijndael256' => 'Ambta\DoctrineEncryptBundle\Encryptors\Rijndael256Encryptor',
-                                                    'rijndael128'=> 'Ambta\DoctrineEncryptBundle\Encryptors\Rijndael128Encryptor');
+    public static $supportedEncryptorClasses = array('rijndael256' => 'Combodo\DoctrineEncryptBundle\Encryptors\Rijndael256Encryptor',
+                                                    'rijndael128'=> 'Combodo\DoctrineEncryptBundle\Encryptors\Rijndael128Encryptor');
 
     /**
      * {@inheritDoc}
@@ -53,8 +53,8 @@ class DoctrineEncryptExtension extends Extension {
         }
 
         //Set parameters
-        $container->setParameter('ambta_doctrine_encrypt.encryptor_class_name', $config['encryptor_class']);
-        $container->setParameter('ambta_doctrine_encrypt.secret_key', $config['secret_key']);
+        $container->setParameter('combodo_doctrine_encrypt.encryptor_class_name', $config['encryptor_class']);
+        $container->setParameter('combodo_doctrine_encrypt.secret_key', $config['secret_key']);
 
         //Load service file
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
@@ -68,6 +68,6 @@ class DoctrineEncryptExtension extends Extension {
      * @return string
      */
     public function getAlias() {
-        return 'ambta_doctrine_encrypt';
+        return 'combodo_doctrine_encrypt';
     }
 }
