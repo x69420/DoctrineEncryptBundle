@@ -8,7 +8,7 @@ use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Combodo\DoctrineEncryptBundle\DependencyInjection\DoctrineEncryptExtension;
 use Combodo\DoctrineEncryptBundle\DependencyInjection\Compiler\RegisterServiceCompilerPass;
 
-class combodoDoctrineEncryptBundle extends Bundle {
+class CombodoDoctrineEncryptBundle extends Bundle {
     
     public function build(ContainerBuilder $container) {
         parent::build($container);
