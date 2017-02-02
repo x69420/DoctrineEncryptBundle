@@ -19,11 +19,16 @@ class AES256OpenSslEncryptor implements EncryptorInterface
 
     /**
      * Must accept secret key for encryption
-     * @param string $secretKey the encryption key
+     * @param string|SensitiveValue $secretKey the encryption key
      */
     public function __construct($secretKey)
     {
-        $this->secretKey = new SensitiveValue($secretKey);
+        if ($secretKey instanceof SensitiveValue) {
+            $this->secretKey = $secretKey;
+        } else {
+            $this->secretKey = new SensitiveValue($secretKey);
+        }
+
     }
 
     /**

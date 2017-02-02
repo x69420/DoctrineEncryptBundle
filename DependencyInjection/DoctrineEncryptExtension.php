@@ -16,8 +16,7 @@ use Symfony\Component\DependencyInjection\Loader;
  */
 class DoctrineEncryptExtension extends Extension {
 
-    public static $supportedEncryptorClasses = array('rijndael256' => 'Combodo\DoctrineEncryptBundle\Encryptors\Rijndael256Encryptor',
-                                                    'rijndael128'=> 'Combodo\DoctrineEncryptBundle\Encryptors\Rijndael128Encryptor');
+    public static $supportedEncryptorClasses = ['aes256' => 'Combodo\DoctrineEncryptBundle\Encryptors\AES256OpenSslEncryptor'];
 
     /**
      * {@inheritDoc}
@@ -48,7 +47,7 @@ class DoctrineEncryptExtension extends Extension {
             if(isset($config['encryptor']) and isset($supportedEncryptorClasses[$config['encryptor']])) {
                 $config['encryptor_class'] = $supportedEncryptorClasses[$config['encryptor']];
             } else {
-                $config['encryptor_class'] = $supportedEncryptorClasses['rijndael256'];
+                $config['encryptor_class'] = $supportedEncryptorClasses['aes256'];
             }
         }
 

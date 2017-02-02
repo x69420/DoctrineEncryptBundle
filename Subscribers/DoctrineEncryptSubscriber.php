@@ -2,6 +2,7 @@
 
 namespace Combodo\DoctrineEncryptBundle\Subscribers;
 
+use Combodo\DoctrineEncryptBundle\Security\SensitiveValue;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Events;
 use Doctrine\Common\EventSubscriber;
@@ -69,19 +70,25 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
      *
      * @param Reader $annReader
      * @param string $encryptorClass  The encryptor class.  This can be empty if a service is being provided.
-     * @param string $secretKey The secret key.
+     * @param string|SensitiveValue $secretKey The secret key.
      * @param EncryptorInterface|NULL $service (Optional)  An EncryptorInterface.
      *
      * This allows for the use of dependency injection for the encrypters.
      */
     public function __construct(Reader $annReader, $encryptorClass, $secretKey, EncryptorInterface $service = NULL) {
         $this->annReader = $annReader;
-        $this->secretKey = $secretKey;
+
+        if ($secretKey instanceof SensitiveValue) {
+            $this->secretKey = $secretKey;
+        } else {
+            $this->secretKey = new SensitiveValue($secretKey);
+        }
+
 
         if ($service instanceof EncryptorInterface) {
             $this->encryptor = $service;
         } else {
-            $this->encryptor = $this->encryptorFactory($encryptorClass, $secretKey);
+            $this->encryptor = $this->encryptorFactory($encryptorClass, $this->secretKey);
         }
 
         $this->restoreEncryptor = $this->encryptor;
