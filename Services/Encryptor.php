@@ -8,7 +8,7 @@
 
 namespace Combodo\DoctrineEncryptBundle\Services;
 
-class Encryptor
+class Encryptor implements EncryptorInterface
 {
     /** @var \Combodo\DoctrineEncryptBundle\Encryptors\EncryptorInterface */
     protected $encryptor;

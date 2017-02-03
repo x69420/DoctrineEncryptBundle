@@ -2,7 +2,7 @@
 namespace Combodo\DoctrineEncryptBundle\Twig;
 
 
-use Combodo\DoctrineEncryptBundle\Encryptors\EncryptorInterface;
+use Combodo\DoctrineEncryptBundle\Services\EncryptorInterface;
 
 
 class EncryptExtension extends \Twig_Extension
