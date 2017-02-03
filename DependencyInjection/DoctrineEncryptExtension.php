@@ -28,7 +28,7 @@ class DoctrineEncryptExtension extends Extension {
         $config = $this->processConfiguration($configuration, $configs);
 
         //Set orm-service in array of services
-        $services = array('orm' => 'orm-services');
+        $services = array('orm' => 'orm-services', 'twig' => 'twig-services');
 
         //set supported encryptor classes
         $supportedEncryptorClasses = self::$supportedEncryptorClasses;
@@ -57,8 +57,10 @@ class DoctrineEncryptExtension extends Extension {
 
         //Load service file
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
-        $loader->load(sprintf('%s.yml', $services['orm']));
 
+        foreach ($services as $service) {
+            $loader->load(sprintf('%s.yml', $service));
+        }
     }
 
     /**
