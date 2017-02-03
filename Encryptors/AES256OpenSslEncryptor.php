@@ -38,9 +38,9 @@ class AES256OpenSslEncryptor implements EncryptorInterface
     public function encrypt($data)
     {
         if (is_null($data)) { return $data; }
-
-        if (mb_strlen($this->secretKey->peek(), '8bit') !== 32) {
-            throw new \Exception("Needs a 256-bit key!");
+        $keyLengthOctet = mb_strlen($this->secretKey->peek(), '8bit');
+        if ($keyLengthOctet !== 32) {
+            throw new \Exception("Needs a 256-bit key, '".($keyLengthOctet * 8)."'bit given");
         }
 
         $ivsize = openssl_cipher_iv_length(self::METHOD);
@@ -64,9 +64,9 @@ class AES256OpenSslEncryptor implements EncryptorInterface
     public function decrypt($data)
     {
         if (is_null($data)) { return $data; }
-
-        if (mb_strlen($this->secretKey->peek(), '8bit') !== 32) {
-            throw new \Exception("Needs a 256-bit key!");
+        $keyLengthOctet = mb_strlen($this->secretKey->peek(), '8bit');
+        if ($keyLengthOctet !== 32) {
+            throw new \Exception("Needs a 256-bit key, '".($keyLengthOctet * 8)."'bit given");
         }
 
         $ivsize         = openssl_cipher_iv_length(self::METHOD);
