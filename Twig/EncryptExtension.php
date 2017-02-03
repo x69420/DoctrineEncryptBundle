@@ -10,10 +10,9 @@ class EncryptExtension extends \Twig_Extension
 
     private $encryptor;
 
-    public function __construct(string $encryptorClassName, string $secretKey)
+    public function __construct(EncryptorInterface $encryptor)
     {
-        /** @var EncryptorInterface encryptor */
-        $this->encryptor = new $encryptorClassName($secretKey);
+        $this->encryptor = $encryptor;
     }
 
 

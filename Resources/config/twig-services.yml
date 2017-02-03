@@ -1,13 +1,7 @@
 services:
     combodo_encrypt.twig_extension:
         class: Combodo\DoctrineEncryptBundle\Twig\EncryptExtension
-        arguments: ["%combodo_doctrine_encrypt.encryptor_class_name%", "%combodo_doctrine_encrypt.secret_key%"]
+        arguments: ["@combodo_doctrine_encrypt.encryptor"]
+        public: false
         tags:
-            -  { name: doctrine.event_subscriber }
-    combodo_doctrine_encrypt.subscriber:
-        alias: combodo_doctrine_encrypt.orm_subscriber
-    combodo_doctrine_encrypt.encryptor:
-        class: Combodo\DoctrineEncryptBundle\Services\Encryptor
-        arguments:
-            - "%combodo_doctrine_encrypt.encryptor_class_name%"
-            - "%combodo_doctrine_encrypt.secret_key%"
+            - { name: twig.extension }
