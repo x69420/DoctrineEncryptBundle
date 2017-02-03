@@ -8,10 +8,14 @@ This is an fork from the original bundle created by vmelnik-ukrain (Many thanks 
 this is again a fork from the bundle [nepda/doctrine-encrypt](https://github.com/nepda/doctrine-encrypt) from Marcel van Nuil.
 
 ## goal of this fork
-I only improved the Encryptor : multiple existed but they where base on mcrypt and had flaws. I replaced them with an openssl alternative, found partly from this fork (again!) : https://github.com/nepda/doctrine-encrypt/blob/master/src/DoctrineEncrypt/Encryptors/OpenSslEncryptor.php
+My main goal is to improve the Encryptor : multiple existed but they where base on mcrypt and had flaws. I replaced them with an openssl alternative, found partly from this fork (again!) : https://github.com/nepda/doctrine-encrypt/blob/master/src/DoctrineEncrypt/Encryptors/OpenSslEncryptor.php
 If the author accept to merge my change, I will probably close this fork.
 
 I also borrowed the "SensitiveValue" and "Mask" class from the great [payum](https://github.com/Payum/Payum) library in order to prevent the secret key to be printed (for more information, see [payum doc](https://github.com/Payum/Payum/blob/master/src/Payum/Core/Resources/docs/working-with-sensitive-information.md)).  
+
+I added a twig extension in case of the need to decode the data only on display. (need additional work to be fully satisfying, like optionally do ont decode in the entity)
+
+The encryptor also throw verbose errors and handle a simple integrity check (the length of the data is stored with the data in a json string, and is verified on the decrypt side).
 
 ## scope of this fork
 The rest of this file anf of the doc will probably remain the forked content. Exept for the namespaces and the authors list that I changed (the search & replace way).
@@ -45,7 +49,7 @@ It is only able to encrypt string values at the moment, numbers and other fields
 ###Documentation
 
 This bundle is responsible for encryption/decryption of the data in your database.
-All encryption/decryption work on the server side.
+All encryption/decryption work on the PHP's server side.
 
 The following documents are available:
 
@@ -62,18 +66,4 @@ This bundle is under the MIT license. See the complete license in the bundle
 ###Versions
 
 I'm using Semantic Versioning like described [here](http://semver.org)
-
-###Todos
-
-The following items will be done in order
-
-1. ~~Review of complete code + fixes/improvements and inline documentation (2.1.1)~~
-2. ~~Add support for the other doctrine relationships (manyToMany, ManyToOne) (2.2)~~
-4. ~~Recreate documentation (2.3)~~
-5. ~~Create example code (2.3)~~
-6. ~~Create an function to encrypt unencrypted database and vice versa (console command, migration, changed key, etc.) (2.4)~~
-7. Look for a posibility of automatic encryption of query parameters (2.5)
-8. Look for a posibility to override findOneBy for automatic encryption of parameters (2.6)
-9. Add support to encrypt data by reference to other property as key (Encrypt data specific to user with user key etc.) (2.7)
-10. Add [Format-preserving encryption](http://en.wikipedia.org/wiki/Format-preserving_encryption) for all data types [Doctrine documentation Types](http://doctrine-dbal.readthedocs.org/en/latest/reference/types.html) (3.0)
 
