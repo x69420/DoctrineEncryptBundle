@@ -61,7 +61,7 @@ class AES256OpenSslEncryptor implements EncryptorInterface
         $storableData = base64_encode($iv . $ciphertext).'<ENC>';
 
 
-        $decrypted = $this->decrypt($storableData);
+        //$decrypted = $this->decrypt($storableData);
 
 
         return $storableData;
