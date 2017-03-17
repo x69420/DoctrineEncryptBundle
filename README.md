@@ -1,4 +1,4 @@
-#DoctrineEncryptBundle version 2.0
+#DoctrineEncryptBundle version 3.0
  
 
 Bundle allows to create doctrine entities with fields that will be protected with 
@@ -101,11 +101,13 @@ You NEED to add the *Decrypt field, it MUST not be persisted, the gettter/setter
 
 
 
-## this verstion 2.0 drop support from many functionnalities of the 1.0 :
+## this verstion 3.0 drop support from many functionnalities of the 1.0 :
 many unused features was removed for the sake of performance and readability : 
 - EmbeddedAnnotation are no more supported (I don't ever know what it is so... if you'r curious, google for `Doctrine\ORM\Mapping\Embedded`)
 - the annotation only mode is no more tested, use it knowing the risk ;)   
 
+an almost total rework of the event listener has been done, it now use a cache for most of the time consuming operations and listen to many less events.
+It do no more need an update on each flush. 
 
 ###Advantages and disadvantaged of an encrypted database
 
