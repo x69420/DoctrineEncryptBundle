@@ -27,5 +27,10 @@
             "name": "Bruno DA SILVA",
             "email": "bruno.dasilva@combodo.com"
         }
-    ]
+    ],
+    "extra": {
+        "branch-alias": {
+            "dev-master": "2.0-dev"
+        }
+    }
 }

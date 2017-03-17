@@ -1,4 +1,5 @@
-#DoctrineEncryptBundle
+#DoctrineEncryptBundle version 2.0
+ 
 
 Bundle allows to create doctrine entities with fields that will be protected with 
 help of some encryption algorithm in database and it will be clearly for developer, because bundle is uses doctrine life cycle events
@@ -25,14 +26,86 @@ The rest of this file anf of the doc will probably remain the forked content. Ex
 It gives you the opportunity to add the @Encrypt annotation above each string property
 
 ```php
-/**
- * @Encrypt
- */
-protected $username;
+
+    /**
+     * @var string
+     * @ORM\Column(name="host", type="string", length=255)
+     * @Encrypted
+     */
+    private $host;
+    /** @var string store the decryptedVersion of $host */
+    private $hostDecrypted;
+    
+        /**
+         * Set host
+         * 
+         * You MUST assign null to the decryped var 
+         * 
+         *
+         * @param string $host
+         *
+         * @return ItopUser
+         */
+        public function setHost($host)
+        {
+            $this->host             = $host;
+            $this->hostDecrypted    = null;//mandatory if you want your host to be encoded again!
+            return $this;
+        }
+    
+        /**
+         * Get host
+         * 
+         * You MUST return the decryped var if it is set
+         * 
+         * @return string
+         */
+        public function getHost()
+        {
+            if (!empty($this->hostDecrypted)) {
+                return $this->hostDecrypted;
+            }
+            return $this->host;
+        }
+    
+        /**
+         * INTERNAL 
+         * Set hostDecrypted
+         *
+         * @param string $host
+         *
+         * @return ItopUser
+         */
+        public function setHostDecrypted($hostDecrypted)
+        {
+            $this->hostDecrypted = $hostDecrypted;
+    
+            return $this;
+        }
+    
+        /**
+         * INTERNAL 
+         * Get hostDecrypted
+         *
+         * @return string
+         */
+        public function getHostDecrypted()
+        {
+            return $this->hostDecrypted;
+        }
 ```
 
 The bundle uses doctrine his life cycle events to encrypt the data when inserted into the database and decrypt the data when loaded into your entity manager.
 It is only able to encrypt string values at the moment, numbers and other fields will be added later on in development.
+You NEED to add the *Decrypt field, it MUST not be persisted, the gettter/setter MUST exists and have standard names, the getter/setter of the encrypted propterties must follow the pattern above  
+
+
+
+## this verstion 2.0 drop support from many functionnalities of the 1.0 :
+many unused features was removed for the sake of performance and readability : 
+- EmbeddedAnnotation are no more supported (I don't ever know what it is so... if you'r curious, google for `Doctrine\ORM\Mapping\Embedded`)
+- the annotation only mode is no more tested, use it knowing the risk ;)   
+
 
 ###Advantages and disadvantaged of an encrypted database
 
