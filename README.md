@@ -101,7 +101,7 @@ You NEED to add the *Decrypt field, it MUST not be persisted, the gettter/setter
 
 
 
-## this verstion 3.0 drop support from many functionnalities of the 1.0 :
+## this verstion 3.0 drop support from many functionnalities of the 2.0 :
 many unused features was removed for the sake of performance and readability : 
 - EmbeddedAnnotation are no more supported (I don't ever know what it is so... if you'r curious, google for `Doctrine\ORM\Mapping\Embedded`)
 - the annotation only mode is no more tested, use it knowing the risk ;)   
