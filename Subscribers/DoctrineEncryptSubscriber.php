@@ -225,7 +225,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
     }
 
     /**
-     * @deprecated present in the original source code, but I don't think it is nescessary
      * Listen to preflush event
      * Encrypt entities that are inserted into the database
      *
@@ -292,7 +291,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
             Events::postLoad,
             Events::preUpdate,
             Events::prePersist,
-            //Events::preFlush,
+            Events::preFlush,
             //Events::postFlush,
         ];
     }
