@@ -4,16 +4,15 @@ namespace Combodo\DoctrineEncryptBundle\Command;
 use Combodo\DoctrineEncryptBundle\Subscribers\DoctrineEncryptSubscriber;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
+use Doctrine\ORM\Internal\Hydration\IterableResult;
+use Symfony\Component\Console\Command\Command;
 
 /**
  * Base command containing usefull base methods.
  *
  * @author Michael Feinbier <michael@feinbier.net>
  **/
-abstract class AbstractCommand extends ContainerAwareCommand
+abstract class AbstractCommand extends Command
 {
 
     /**
@@ -31,15 +30,15 @@ abstract class AbstractCommand extends ContainerAwareCommand
      */
     protected $annotationReader;
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function initialize(InputInterface $input, OutputInterface $output)
-    {
-        $container = $this->getContainer();
-        $this->entityManager = $container->get('doctrine.orm.entity_manager');
-        $this->annotationReader = $container->get('annotation_reader');
-        $this->subscriber = $container->get('combodo_doctrine_encrypt.subscriber');
+    public function __construct(
+        EntityManagerInterface $manager,
+        DoctrineEncryptSubscriber $subscriber,
+        AnnotationReader $logger
+    ) {
+        parent::__construct();
+        $this->entityManager = $manager;
+        $this->subscriber = $subscriber;
+        $this->annotationReader = $logger;
     }
 
     /**
@@ -47,7 +46,7 @@ abstract class AbstractCommand extends ContainerAwareCommand
      *
      * @param string $entityName
      *
-     * @return \Doctrine\ORM\Internal\Hydration\IterableResult
+     * @return IterableResult
      */
     protected function getEntityIterator($entityName)
     {

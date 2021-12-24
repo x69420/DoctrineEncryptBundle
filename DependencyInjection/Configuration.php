@@ -20,11 +20,10 @@ class Configuration implements ConfigurationInterface {
     public function getConfigTreeBuilder() {
 
         //Create tree builder
-        $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('combodo_doctrine_encrypt');
+        $treeBuilder = new TreeBuilder('combodo_doctrine_encrypt');
 
         // Grammar of config tree
-        $rootNode
+        $treeBuilder->getRootNode()
                 ->children()
                     ->scalarNode('secret_key')
                     ->end()
@@ -36,5 +35,4 @@ class Configuration implements ConfigurationInterface {
 
         return $treeBuilder;
     }
-
 }

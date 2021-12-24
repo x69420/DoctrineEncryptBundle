@@ -3,8 +3,6 @@
 namespace Combodo\DoctrineEncryptBundle\Command;
 
 use Combodo\DoctrineEncryptBundle\DependencyInjection\DoctrineEncryptExtension;
-use Doctrine\Common\Annotations\AnnotationReader;
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;

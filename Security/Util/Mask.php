@@ -1,5 +1,7 @@
 <?php
+
 namespace Combodo\DoctrineEncryptBundle\Security\Util;
+
 class Mask
 {
     /**

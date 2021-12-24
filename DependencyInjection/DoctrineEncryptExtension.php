@@ -22,7 +22,6 @@ class DoctrineEncryptExtension extends Extension {
      * {@inheritDoc}
      */
     public function load(array $configs, ContainerBuilder $container) {
-
         //Create configuration object
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
@@ -35,8 +34,8 @@ class DoctrineEncryptExtension extends Extension {
 
         //If no secret key is set, check for framework secret, otherwise throw exception
         if (empty($config['secret_key'])) {
-            if ($container->hasParameter('secret')) {
-                $config['secret_key'] = $container->getParameter('secret');
+            if ($container->hasParameter('kernel.secret')) {
+                $config['secret_key'] = $container->getParameter('kernel.secret');
             } else {
                 throw new \RuntimeException('You must provide "secret_key" for DoctrineEncryptBundle or "secret" for framework');
             }

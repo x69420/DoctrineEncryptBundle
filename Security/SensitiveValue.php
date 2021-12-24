@@ -1,6 +1,9 @@
 <?php
+
 namespace Combodo\DoctrineEncryptBundle\Security;
+
 use Combodo\DoctrineEncryptBundle\Security\Util\Mask;
+
 final class SensitiveValue implements \Serializable, \JsonSerializable
 {
     private $value;
@@ -62,7 +65,7 @@ final class SensitiveValue implements \Serializable, \JsonSerializable
      */
     public function __clone()
     {
-        throw new Exception('It is not permitted to close this object.');
+        throw new \Exception('It is not permitted to close this object.');
     }
     /**
      * {@inheritDoc}

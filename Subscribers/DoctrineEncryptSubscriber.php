@@ -2,9 +2,8 @@
 
 namespace Combodo\DoctrineEncryptBundle\Subscribers;
 
+use Combodo\DoctrineEncryptBundle\Configuration\Encrypted;
 use Combodo\DoctrineEncryptBundle\Security\SensitiveValue;
-use Doctrine\Common\Persistence\Mapping\ClassMetadata;
-use Doctrine\ORM\Event\LoadClassMetadataEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Events;
 use Doctrine\Common\EventSubscriber;
@@ -12,8 +11,7 @@ use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\ORM\Event\PreFlushEventArgs;
 use Doctrine\Common\Annotations\Reader;
-use Doctrine\Common\Util\ClassUtils;
-use \ReflectionClass;
+use ReflectionClass;
 use Combodo\DoctrineEncryptBundle\Encryptors\EncryptorInterface;
 
 /**
@@ -71,7 +69,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
     private static $cacheByEntity = [];
 
 
-
     /**
      * Initialization of subscriber
      *
@@ -84,20 +81,12 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
      */
     public function __construct(Reader $annReader, $encryptorClass, $secretKey, EncryptorInterface $service = NULL) {
         $this->annReader = $annReader;
-
-        if ($secretKey instanceof SensitiveValue) {
-            $this->secretKey = $secretKey;
-        } else {
-            $this->secretKey = new SensitiveValue($secretKey);
-        }
-
-
-        if ($service instanceof EncryptorInterface) {
-            $this->encryptor = $service;
-        } else {
-            $this->encryptor = $this->encryptorFactory($encryptorClass, $this->secretKey);
-        }
-
+        $this->secretKey = $secretKey instanceof SensitiveValue
+            ? $secretKey
+            : new SensitiveValue($secretKey);
+        $this->encryptor = $service instanceof EncryptorInterface
+            ? $service
+            : $this->encryptorFactory($encryptorClass, $this->secretKey);
         $this->restoreEncryptor = $this->encryptor;
 
     }
@@ -108,7 +97,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
      * @param $encryptorClass
      */
     public function setEncryptor($encryptorClass) {
-
         if(!is_null($encryptorClass)) {
             $this->encryptor = $this->encryptorFactory($encryptorClass, $this->secretKey);
             return;
@@ -121,11 +109,9 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
      * Get the current encryptor
      */
     public function getEncryptor() {
-        if(!empty($this->encryptor)) {
-            return get_class($this->encryptor);
-        } else {
-            return null;
-        }
+        return !empty($this->encryptor)
+            ? get_class($this->encryptor)
+            : null;
     }
 
     /**
@@ -146,10 +132,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
      * @param LifecycleEventArgs $args
      */
     public function postUpdate(LifecycleEventArgs $args) {
-
-        $entity = $args->getEntity();
-        $this->processFields($entity, false);
-
+        $this->processFields($args->getEntity(), false);
     }
 
     /**
@@ -208,20 +191,16 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
      * @param LifecycleEventArgs $args
      */
     public function postLoad(LifecycleEventArgs $args) {
-
-        //Get entity and process fields
-        $entity = $args->getEntity();
-        $this->processFields($entity, false);
-
+        $this->processFields($args->getEntity(), false);
     }
+
     /**
      * Listen a prePersist lifecycle event. Checking and encrypt entities
      * which have @Encrypted annotation
      * @param LifecycleEventArgs $args
      */
     public function prePersist(LifecycleEventArgs $args) {
-        $entity = $args->getEntity();
-        $this->processFields($entity);
+        $this->processFields($args->getEntity());
     }
 
     /**
@@ -303,10 +282,10 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
      * @param Object $entity doctrine entity
      * @param Boolean $isEncryptOperation If true - encrypt, false - decrypt entity
      *
-     * @throws \RuntimeException
+     * @return void|null
+     *@throws \RuntimeException
      *
-     * @return object|null
-     */
+          */
     public function processFields($entity, $isEncryptOperation = true) {
 
         $entityCache = $this->getCache($entity);
@@ -320,8 +299,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
 
         $aEncryptFields  = $entityCache['properties'];
         $reflectionClass = $entityCache['ReflectionClass'];
-
-
 
 
         foreach ($aEncryptFields as $field) {
@@ -386,13 +363,11 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
      * Recursive function to get an associative array of class properties
      * including inherited ones from extended classes
      *
-     * @param string $className Class name
+     * @param ReflectionClass $reflectionClass
      *
      * @return array
      */
-    function getClassProperties(ReflectionClass $reflectionClass){
-
-
+    function getClassProperties(ReflectionClass $reflectionClass) {
         $properties = $reflectionClass->getProperties();
         $propertiesArray = array();
 
@@ -420,11 +395,10 @@ class DoctrineEncryptSubscriber implements EventSubscriber {
      * @throws \RuntimeException
      */
     private function encryptorFactory($classFullName, $secretKey) {
-        $refClass = new \ReflectionClass($classFullName);
-        if ($refClass->implementsInterface(self::ENCRYPTOR_INTERFACE_NS)) {
+        if ((new \ReflectionClass($classFullName))->implementsInterface(self::ENCRYPTOR_INTERFACE_NS)) {
             return new $classFullName($secretKey);
-        } else {
-            throw new \RuntimeException('Encryptor must implements interface EncryptorInterface');
         }
+
+        throw new \RuntimeException('Encryptor must implements interface EncryptorInterface');
     }
 }

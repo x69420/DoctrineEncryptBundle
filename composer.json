@@ -1,18 +1,23 @@
 {
-    "name": "combodo/doctrine-encrypt-bundle",
+    "name": "x69420/doctrine-encrypt-bundle",
     "type": "library",
     "keywords": ["doctrine", "symfony", "aes256", "openssl", "encrypt", "decrypt", "bundle"],
     "license": "MIT",
-    "description": "Symfony 2 bundle which allows to encrypt data in database with some encrypt algorithm, this fork make use of open ssl",
+    "description": "Symfony 5 bundle which allows to encrypt data in database with some encrypt algorithm, this fork make use of open ssl",
     "require": {
-        "php": ">=5.4",
+        "php": ">=7.0",
         "doctrine/orm": ">=2.5",
-        "ext-openssl": "*"
+        "doctrine/cache": "^1.0",
+        "ext-openssl": "*",
+        "ext-json": "*",
+        "symfony/config": "^5.0",
+        "symfony/dependency-injection": "^5.0",
+        "symfony/http-kernel": "^5.0",
+        "twig/twig": "^2.4 || ^3.0"
     },
     "autoload": {
-        "psr-0": { "Combodo\\DoctrineEncryptBundle": "" }
+        "psr-4": { "Combodo\\DoctrineEncryptBundle\\": "" }
     },
-    "target-dir": "Combodo/DoctrineEncryptBundle",
     "authors": [
         {
             "name": "Victor Melnik",
@@ -27,9 +32,9 @@
             "email": "bruno.dasilva@combodo.com"
         }
     ],
-    "extra": {
-        "branch-alias": {
-            "dev-master": "3.0-dev"
+    "config": {
+        "allow-plugins": {
+            "composer/package-versions-deprecated": true
         }
     }
 }
